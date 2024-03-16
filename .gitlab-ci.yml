@@ -47,7 +47,7 @@ docker-build-and-push:
     - echo "=========================== BUILD DOCKER IMAGES ============================"
     - docker build -t ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-$(echo $COMMIT_TIME) .
     - echo "========================== TAG IMAGES WITH LATEST =========================="
-    - docker tag ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-$(echo $COMMIT_TIME) ${HARBORHOST}/gdutday/gdutday:latest
+    - docker tag ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-$(echo $COMMIT_TIME) ${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest
     - echo "========================== PUSH IMAGES TO HARBOR ==========================="
     - docker push ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-$(echo $COMMIT_TIME)
     - docker push ${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest
