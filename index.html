@@ -49,8 +49,7 @@ function drawMeter(c,amount,bk,colorBegin, colorEnd,progress,prog){
         var g = ctx.createLinearGradient(0,0,180,0);  //创建渐变对象  渐变开始点和渐变结束点
         g.addColorStop(0, colorBegin); //添加颜色点
         g.addColorStop(1, colorEnd); //添加颜色点
-        //ctx.strokeStyle = g;     //使用渐变对象作为圆环的颜色
-
+        
         ctx.beginPath();
         ctx.strokeStyle=g;
         ctx.lineWidth=12*sizScale;
@@ -106,7 +105,7 @@ function updateUI(forced){
         I("pingText").textContent=format(uiData.pingStatus);
         I("jitText").textContent=format(uiData.jitterStatus);
         var prog=(Number(uiData.dlProgress)*2+Number(uiData.ulProgress)*2+Number(uiData.pingProgress))/5;
-        // I("progress").style.width=(100*prog)+"%";
+        
         var ipIspArr = I("ip").textContent.split(' - ', 3);
         var ip = ipIspArr[0];
         var isp = ipIspArr[1];
@@ -300,7 +299,7 @@ function initUI(){
 </style>
 </head>
 <body>
-<h1>GDUTNIC 测速网站 ( <a href="https://speed4.gdutnic.com">IPv4</a> / <a href="https://speed6.gdutnic.com">IPv6</a> )</h1>
+<h1>GDUTNIC 测速网站 ( <a id="ipv4DisplayLink" href="#">IPv4</a> / <a id="ipv6DisplayLink" href="#">IPv6</a> )</h1>
 <div id="testWrapper">
         <div id="startStopBtn" onclick="startStop()">
                 <span class="start-border"></span>
@@ -339,7 +338,68 @@ function initUI(){
         </div>
 </div>
 <p><a href="./results.html" target="_blank">查看测速记录</a></p>
-<script type="text/javascript">setTimeout(function(){initUI()},100);</script>
+
+<script type="text/javascript">
+// This script runs after the DOM is fully loaded.
+document.addEventListener('DOMContentLoaded', function() {
+    // --- Configuration for IPv4/IPv6 display links in the H1 tag ---
+
+    // Default behavior if URLs are not configured (e.g., show an alert).
+    const defaultIpv4Href = "javascript:alert('IPv4 URL not configured. Check console for details.');";
+    const defaultIpv6Href = "javascript:alert('IPv6 URL not configured. Check console for details.');";
+
+    let finalIpv4Url = defaultIpv4Href;
+    // Check if a global configuration object 'ENV_CONFIG' and the IPV4_URL property exist.
+    // This object should be populated by your server or build process.
+    if (window.ENV_CONFIG && window.ENV_CONFIG.IPV4_URL) {
+        finalIpv4Url = window.ENV_CONFIG.IPV4_URL;
+    } else {
+        console.warn("Global IPV4_URL (via window.ENV_CONFIG.IPV4_URL) not found. Using default link behavior for H1 display link. Ensure your server/build process sets this variable.");
+    }
+
+    let finalIpv6Url = defaultIpv6Href;
+    // Check for IPV6_URL
+    if (window.ENV_CONFIG && window.ENV_CONFIG.IPV6_URL) {
+        finalIpv6Url = window.ENV_CONFIG.IPV6_URL;
+    } else {
+        console.warn("Global IPV6_URL (via window.ENV_CONFIG.IPV6_URL) not found. Using default link behavior for H1 display link. Ensure your server/build process sets this variable.");
+    }
+
+    // Get the anchor elements by their new IDs.
+    const ipv4LinkElement = document.getElementById('ipv4DisplayLink');
+    const ipv6LinkElement = document.getElementById('ipv6DisplayLink');
+
+    // Update the href for the IPv4 link.
+    if (ipv4LinkElement) {
+        ipv4LinkElement.href = finalIpv4Url;
+        // Add a title if the URL is not configured, to give users a hint.
+        if (finalIpv4Url === defaultIpv4Href) {
+             ipv4LinkElement.title = "IPv4 URL is not configured";
+        }
+    }
+
+    // Update the href for the IPv6 link.
+    if (ipv6LinkElement) {
+        ipv6LinkElement.href = finalIpv6Url;
+        if (finalIpv6Url === defaultIpv6Href) {
+             ipv6LinkElement.title = "IPv6 URL is not configured";
+        }
+    }
+
+    // IMPORTANT NOTE:
+    // This script only updates the display links in the H1 tag.
+    // The actual speed test functionality (handled by speedtest.js and the 's' object)
+    // might require its own separate configuration to use specific IPv4/IPv6 test endpoints.
+    // If your speedtest.js needs to know these URLs to perform tests against specific
+    // IPv4/IPv6 servers, you will need to adapt its initialization or configuration method.
+    // For example, you might need to pass `finalIpv4Url` and `finalIpv6Url` to
+    // the Speedtest object or set them in its configuration options.
+    // Please check the documentation or source code of your `speedtest.js`.
+});
+
+// Initialize the UI (this was your original script line)
+setTimeout(function(){initUI()},100);
+</script>
 </body>
 </html>
 
