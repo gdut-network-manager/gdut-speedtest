@@ -21,6 +21,8 @@ COPY font/ /speedtest/font
 
 COPY *.js /speedtest/
 COPY *.html /speedtest/
+COPY *.php /speedtest/
+COPY .htaccess /speedtest/
 
 COPY docker/entrypoint.sh /
 
