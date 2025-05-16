@@ -1,0 +1,16 @@
+# 让 index.php 成为默认首页
+DirectoryIndex index.php index.html
+
+# 允许所有人访问本目录下的文件
+<IfModule mod_authz_core.c>
+    Require all granted
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Allow from all
+</IfModule>
+
+# （可选）如果你需要 .html/.htm 也用 PHP 解析，可加：
+#<FilesMatch "\.(html|htm)$">
+#    SetHandler application/x-httpd-php
+#</FilesMatch>
