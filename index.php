@@ -1,4 +1,8 @@
-<!DOCTYPE html>
+<?php
+  // 开头可选：确保读到环境变量
+  $ipv4 = getenv('IPV4_URL') ?: '#';
+  $ipv6 = getenv('IPV6_URL') ?: '#';
+?><!DOCTYPE html>
 <html>
 <head>
         <title>GDUTNIC 测速网站</title>
@@ -12,21 +16,6 @@
         <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
         <meta http-equiv="Pragma" content="no-cache" />
         <meta http-equiv="Expires" content="0" />
-        <!-- 注入环境变量 -->
-        <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                  fetch('./backend/env.php')
-                    .then(function(res) { return res.json(); })
-                    .then(function(cfg) {
-                      // 如果环境里没配，就用 '#' 占位
-                      document.getElementById('ipv4link').href = cfg.ipv4 || '#';
-                      document.getElementById('ipv6link').href = cfg.ipv6 || '#';
-                    })
-                    .catch(function(err) {
-                      console.error('加载配置失败:', err);
-                    });
-                });
-        </script>
         <script type="text/javascript">
                 function I(i){return document.getElementById(i);}
                 //INITIALIZE SPEEDTEST
@@ -315,9 +304,9 @@
 </head>
 <body>
         <h1>GDUTNIC 测速网站 (
-                <a id="ipv4link">IPv4</a> /
-                <a id="ipv6link">IPv6</a>
-              )</h1>
+            <a href="<?php echo $ipv4; ?>">IPv4</a> /
+            <a href="<?php echo $ipv6; ?>">IPv6</a>
+          )</h1>
         <div id="testWrapper">
                 <div id="startStopBtn" onclick="startStop()">
                         <span class="start-border"></span>
