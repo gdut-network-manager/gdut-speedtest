@@ -7,12 +7,12 @@ set -x
 #rm -rf /var/www/html/*
 
 # Copy frontend files
-cp /speedtest/*.js /var/www/html/
-cp /speedtest/*.html /var/www/html/
+cp -n /speedtest/*.js /var/www/html/
+cp -n /speedtest/*.html /var/www/html/
 
-cp -r /speedtest/backend/ /var/www/html/backend
-cp -r /speedtest/chartjs/ /var/www/html/chartjs
-cp -r /speedtest/font/ /var/www/html/font
+cp -n -r /speedtest/backend/ /var/www/html/backend
+cp -n -r /speedtest/chartjs/ /var/www/html/chartjs
+cp -n -r /speedtest/font/ /var/www/html/font
 
 ln -snf /var/www/html/backend/speedlogs /speedlogs
 
