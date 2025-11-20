@@ -111,6 +111,10 @@ image-sign:
     - cosign login -u ${USERNAME} -p ${PASSWORD} ${HARBORHOST}
     - echo "=============================== IMAGE SIGN ================================="
     - cosign sign --key cosign.key ${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest
+    - echo "========================== FIX FILE PERMISSIONS ============================"
+    # 修改文件权限，使 Runner 可以读取
+    - chmod 644 cosign.key cosign.pub
+    - ls -la cosign.*
     - echo "================================ EXPORT KEY ================================"
     - echo "The Password of the key is Harbor account's password, the key will reserved for 30 minutes."
     - echo "COMMIT_TIME=${COMMIT_TIME}" >> build.env
