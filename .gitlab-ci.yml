@@ -38,6 +38,13 @@ docker-build-and-push:
     - Docker
   services:
     - name: docker:stable
+  before_script:
+    - echo "======================== SETUP BUILDX ENVIRONMENT =========================="
+    - docker info
+    - apk add --no-cache git
+    # 创建并使用 buildx builder
+    - docker buildx create --use --name multiarch-builder --driver docker-container --bootstrap || docker buildx use multiarch-builder
+    - docker buildx inspect --bootstrap
   script:
     - echo "========================== GENERATE VERSION TAGS ==========================="
     - export COMMIT_TIME=$(echo $CI_JOB_STARTED_AT | sed -E 's/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})\+.*$/\1\2\3\4\5\6/g')
