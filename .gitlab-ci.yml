@@ -44,13 +44,21 @@ docker-build-and-push:
     - echo "The commit timestamp is $(echo $COMMIT_TIME | sed 's/[-T:.]//g')"
     - echo "============================= LOGIN TO HARBOR =============================="
     - docker login -u ${USERNAME} -p ${PASSWORD} ${HARBORHOST}
-    - echo "=========================== BUILD DOCKER IMAGES ============================"
-    - docker build -t ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-$(echo $COMMIT_TIME) .
-    - echo "========================== TAG IMAGES WITH LATEST =========================="
-    - docker tag ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-$(echo $COMMIT_TIME) ${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest
-    - echo "========================== PUSH IMAGES TO HARBOR ==========================="
-    - docker push ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-$(echo $COMMIT_TIME)
-    - docker push ${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest
+    # - echo "=========================== BUILD DOCKER IMAGES ============================"
+    # - docker build -t ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-$(echo $COMMIT_TIME) .
+    # - echo "========================== TAG IMAGES WITH LATEST =========================="
+    # - docker tag ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-$(echo $COMMIT_TIME) ${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest
+    # - echo "========================== PUSH IMAGES TO HARBOR ==========================="
+    # - docker push ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-$(echo $COMMIT_TIME)
+    # - docker push ${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest
+    - echo "======================= BUILD AND PUSH DOCKER IMAGES ======================="
+    - |
+      docker buildx build \
+        --platform linux/amd64,linux/arm64 \
+        --tag ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-${COMMIT_TIME} \
+        --tag ${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest \
+        --push \
+        .
     - echo "============================= CLEAN UP MIRRORS ============================="
     - docker rmi ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-$(echo $COMMIT_TIME)
     - echo "============================ EXPORT IMAGE TAGS ============================="
