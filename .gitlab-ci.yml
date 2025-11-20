@@ -66,8 +66,8 @@ docker-build-and-push:
         --tag ${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest \
         --push \
         .
-    - echo "============================= CLEAN UP MIRRORS ============================="
-    - docker rmi ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-$(echo $COMMIT_TIME)
+    #- echo "============================= CLEAN UP MIRRORS ============================="
+    # - docker rmi ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-$(echo $COMMIT_TIME)
     - echo "============================ EXPORT IMAGE TAGS ============================="
     - echo "COMMIT_TIME=$COMMIT_TIME" >> build.env
   artifacts:
