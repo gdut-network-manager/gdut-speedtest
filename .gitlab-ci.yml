@@ -43,7 +43,7 @@ docker-build-and-push:
     - docker info
     - apk add --no-cache git
     # 创建并使用 buildx builder
-    - docker buildx create --use --name multiarch-builder --driver docker-container --bootstrap || docker buildx use multiarch-builder
+    - docker buildx create --use --name multiarch-builder --driver docker-container --platform linux/amd64,linux/arm64,linux/arm/v7 --bootstrap || docker buildx use multiarch-builder
     - docker buildx inspect --bootstrap
   script:
     - echo "========================== GENERATE VERSION TAGS ==========================="
