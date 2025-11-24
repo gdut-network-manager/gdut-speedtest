@@ -43,7 +43,7 @@ docker-build-and-push:
     - docker info
     - apk add --no-cache git
     # 创建并使用 buildx builder
-    - docker buildx create --use --name multiarch-builder --driver docker-container --platform linux/amd64,linux/arm64,linux/arm/v7 --bootstrap || docker buildx use multiarch-builder
+    - docker buildx create --use --name multiarch-builder --driver docker-container --platform linux/amd64,linux/arm64,linux/arm/v5,linux/arm/v6,linux/arm/v7,linux/ppc64le,linux/riscv64,linux/s390x,linux/mips64le --bootstrap || docker buildx use multiarch-builder
     - docker buildx inspect --bootstrap
   script:
     - echo "========================== GENERATE VERSION TAGS ==========================="
@@ -61,16 +61,27 @@ docker-build-and-push:
     - echo "======================= BUILD AND PUSH DOCKER IMAGES ======================="
     - |
       docker buildx build \
-        --platform linux/amd64,linux/arm64 \
+        --platform linux/386,linux/amd64,linux/arm64,linux/arm/v7 \
         --tag ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-${COMMIT_TIME} \
         --tag ${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest \
         --push \
         .
     #- echo "============================= CLEAN UP MIRRORS ============================="
     # - docker rmi ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-$(echo $COMMIT_TIME)
+    - echo "==================== EXTRACT ARCHITECTURE DIGESTS ========================="
+    # 获取 manifest 并提取每个架构的 digest
+    - docker buildx imagetools inspect ${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest --raw | tee manifest.json
+    - |
+      # 提取所有架构的 digest
+      DIGESTS=$(docker buildx imagetools inspect ${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest --format '{{json .Manifest}}' | jq -r '.manifests[] | "\(.platform.architecture):\(.digest)"')
+      echo "$DIGESTS" > arch_digests.txt
+      cat arch_digests.txt
     - echo "============================ EXPORT IMAGE TAGS ============================="
     - echo "COMMIT_TIME=$COMMIT_TIME" >> build.env
   artifacts:
+    paths:
+      - arch_digests.txt
+      - manifest.json
     reports:
       dotenv: build.env
     expire_in: 30 min
@@ -109,8 +120,22 @@ image-sign:
     - cosign generate-key-pair
     - echo "============================= LOGIN TO HARBOR =============================="
     - cosign login -u ${USERNAME} -p ${PASSWORD} ${HARBORHOST}
-    - echo "=============================== IMAGE SIGN ================================="
-    - cosign sign --key cosign.key ${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest
+    - echo "===================== SIGN EACH ARCHITECTURE IMAGE ========================"
+    # 签名 manifest list (整体镜像)
+    - echo "Signing manifest list..."
+    - cosign sign --key cosign.key ${HARBORHOST}/gdutnic-speedtest/gdutdays:latest
+    # 签名每个架构的镜像
+    - |
+      echo "Signing individual architecture images..."
+      while IFS=: read -r arch digest; do
+        echo "Signing $arch architecture with digest: $digest"
+        cosign sign --key cosign.key ${HARBORHOST}/gdutnic-speedtest/speedtest-x@${digest}
+      done < arch_digests.txt
+    - echo "==================== SIGN VERSIONED TAG ARCHITECTURES ====================="
+    # 如果需要也对带版本号的标签进行签名
+    - cosign sign --key cosign.key ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${IMAGE_TAG}
+    # - echo "=============================== IMAGE SIGN ================================="
+    # - cosign sign --key cosign.key ${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest
     - echo "========================== FIX FILE PERMISSIONS ============================"
     # 修改文件权限，使 Runner 可以读取
     - chmod 644 cosign.key cosign.pub
