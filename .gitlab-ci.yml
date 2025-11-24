@@ -68,20 +68,9 @@ docker-build-and-push:
         .
     #- echo "============================= CLEAN UP MIRRORS ============================="
     # - docker rmi ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-$(echo $COMMIT_TIME)
-    - echo "==================== EXTRACT ARCHITECTURE DIGESTS ========================="
-    # 获取 manifest 并提取每个架构的 digest
-    - docker buildx imagetools inspect ${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest --raw | tee manifest.json
-    - |
-      # 提取所有架构的 digest
-      DIGESTS=$(docker buildx imagetools inspect ${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest --format '{{json .Manifest}}' | jq -r '.manifests[] | "\(.platform.architecture):\(.digest)"')
-      echo "$DIGESTS" > arch_digests.txt
-      cat arch_digests.txt
     - echo "============================ EXPORT IMAGE TAGS ============================="
     - echo "COMMIT_TIME=$COMMIT_TIME" >> build.env
   artifacts:
-    paths:
-      - arch_digests.txt
-      - manifest.json
     reports:
       dotenv: build.env
     expire_in: 30 min
@@ -104,8 +93,8 @@ image-sign:
             deb http://mirrors.gdut.edu.cn/ubuntu/ jammy-security main restricted universe multiverse
             deb-src http://mirrors.gdut.edu.cn/ubuntu/ jammy-security main restricted universe multiverse' > /etc/apt/sources.list
     - apt update -y
-    - echo "=============================== INSTALL CURL ==============================="
-    - apt install curl -y
+    - echo "======================== INSTALL REQUIRED TOOLS ============================"
+    - apt install curl jq skopeo -y
   script:
     - echo "================================= LOAD ENV ================================="
     - env
@@ -120,16 +109,37 @@ image-sign:
     - cosign generate-key-pair
     - echo "============================= LOGIN TO HARBOR =============================="
     - cosign login -u ${USERNAME} -p ${PASSWORD} ${HARBORHOST}
+    - echo "==================== EXTRACT ARCHITECTURE DIGESTS ========================="
+    # 使用 skopeo 获取镜像 manifest 信息
+    - |
+      echo "Fetching manifest for ${HARBORHOST}/gdutdays/gdutdays:latest"
+      skopeo inspect --raw docker://${HARBORHOST}/gdutdays/gdutdays:latest > manifest.json
+      
+      # 解析 manifest，提取每个架构的 digest
+      cat manifest.json | jq -r '
+        if .manifests then
+          .manifests[] | "\(.platform.architecture):\(.digest)"
+        else
+          "single-arch:\(.config.digest // "unknown")"
+        end
+      ' > arch_digests.txt
+      
+      echo "Architecture digests:"
+      cat arch_digests.txt
     - echo "===================== SIGN EACH ARCHITECTURE IMAGE ========================"
     # 签名 manifest list (整体镜像)
-    - echo "Signing manifest list..."
-    - cosign sign --key cosign.key ${HARBORHOST}/gdutnic-speedtest/gdutdays:latest
+    - echo "Signing manifest list for latest tag..."
+    - cosign sign --key cosign.key ${HARBORHOST}/gdutdays/gdutdays:latest
     # 签名每个架构的镜像
     - |
       echo "Signing individual architecture images..."
       while IFS=: read -r arch digest; do
-        echo "Signing $arch architecture with digest: $digest"
-        cosign sign --key cosign.key ${HARBORHOST}/gdutnic-speedtest/speedtest-x@${digest}
+        if [ "$arch" != "single-arch" ] && [ -n "$digest" ]; then
+          echo "Signing $arch architecture with digest: $digest"
+          cosign sign --key cosign.key ${HARBORHOST}/gdutdays/gdutdays@${digest}
+        else
+          echo "Skipping single-arch or empty digest"
+        fi
       done < arch_digests.txt
     - echo "==================== SIGN VERSIONED TAG ARCHITECTURES ====================="
     # 如果需要也对带版本号的标签进行签名
