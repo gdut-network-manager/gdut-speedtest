@@ -32,7 +32,7 @@ sonarqube-check:
     - develop
 
 docker-build-and-push:
-  image: docker:24-cli
+  image: docker.m.ixdev.cn/library/docker:24-cli
   stage: build-phase-1
   tags:
     - Docker

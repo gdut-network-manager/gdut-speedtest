@@ -1,4 +1,4 @@
-FROM registry.gdut.edu.cn/docker/library/php:7.4-apache
+FROM docker.m.ixdev.cn/library/php:7.4-apache
 
 # Install extensions
 RUN apt-get update && apt-get install -y \
