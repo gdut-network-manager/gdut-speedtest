@@ -112,8 +112,8 @@ image-sign:
     - echo "==================== EXTRACT ARCHITECTURE DIGESTS ========================="
     # 使用 skopeo 获取镜像 manifest 信息
     - |
-      echo "Fetching manifest for ${HARBORHOST}/gdutdays/gdutdays:latest"
-      skopeo inspect --raw docker://${HARBORHOST}/gdutdays/gdutdays:latest > manifest.json
+      echo "Fetching manifest for ${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest"
+      skopeo inspect --raw docker://${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest > manifest.json
       
       # 解析 manifest，提取每个架构的 digest
       cat manifest.json | jq -r '
@@ -129,14 +129,14 @@ image-sign:
     - echo "===================== SIGN EACH ARCHITECTURE IMAGE ========================"
     # 签名 manifest list (整体镜像)
     - echo "Signing manifest list for latest tag..."
-    - cosign sign --key cosign.key ${HARBORHOST}/gdutdays/gdutdays:latest
+    - cosign sign --key cosign.key ${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest
     # 签名每个架构的镜像
     - |
       echo "Signing individual architecture images..."
       while IFS=: read -r arch digest; do
         if [ "$arch" != "single-arch" ] && [ -n "$digest" ]; then
           echo "Signing $arch architecture with digest: $digest"
-          cosign sign --key cosign.key ${HARBORHOST}/gdutdays/gdutdays@${digest}
+          cosign sign --key cosign.key ${HARBORHOST}/gdutnic-speedtest/speedtest-x@${digest}
         else
           echo "Skipping single-arch or empty digest"
         fi
