@@ -116,13 +116,13 @@ kaniko-build-and-push:
       {
         "auths": {
           "${HARBORHOST}": {
-            "auth": "$(echo -n ${USERNAME}:${PASSWORD} | base64)"
+            "auth": "$(printf '%s:%s' "${USERNAME}" "${PASSWORD}" | base64 | tr -d '\n')"
           }
         }
       }
       EOF
-    # 安装 git（用于获取仓库信息）
-    - apk add --no-cache git
+    - echo "Kaniko version:"
+    - /kaniko/executor version
   script:
     - echo "========================== GENERATE VERSION TAGS ==========================="
     - export COMMIT_TIME=$(echo $CI_JOB_STARTED_AT | sed -E 's/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})\+.*$/\1\2\3\4\5\6/g')
