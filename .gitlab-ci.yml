@@ -102,43 +102,27 @@ sonarqube-check:
 #   only:
 #     - master
 
-podman-build-and-push:
-  image: quay.io/podman/stable:latest
+kaniko-build-and-push:
+  image: gcr.io/kaniko-project/executor:v1.23.2-debug
   stage: build-phase-1
   tags:
     - dev
   before_script:
-    - echo "======================== SETUP PODMAN ENVIRONMENT =========================="
-    # 配置 Podman 存储
-    - mkdir -p /etc/containers
+    - echo "======================== SETUP KANIKO ENVIRONMENT =========================="
+    # 配置认证信息
+    - mkdir -p /kaniko/.docker
     - |
-      cat > /etc/containers/storage.conf <<EOF
-      [storage]
-      driver = "vfs"
-      runroot = "/var/run/containers/storage"
-      graphroot = "/var/lib/containers/storage"
-      [storage.options]
-      ignore_chown_errors = "true"
-      force_mask = "0000"
+      cat > /kaniko/.docker/config.json <<EOF
+      {
+        "auths": {
+          "${HARBORHOST}": {
+            "auth": "$(echo -n ${USERNAME}:${PASSWORD} | base64)"
+          }
+        }
+      }
       EOF
-    # 配置 Podman 容器运行时 - 关键配置
-    - |
-      cat > /etc/containers/containers.conf <<EOF
-      [engine]
-      cgroup_manager = "cgroupfs"
-      events_logger = "file"
-      runtime = "crun"
-      [containers]
-      netns = "host"
-      userns = "host"
-      ipcns = "host"
-      utsns = "host"
-      cgroupns = "host"
-      EOF
-    # 安装必要工具
-    - dnf install -y git qemu-user-static
-    - podman version
-    - podman info
+    # 安装 git（用于获取仓库信息）
+    - apk add --no-cache git
   script:
     - echo "========================== GENERATE VERSION TAGS ==========================="
     - export COMMIT_TIME=$(echo $CI_JOB_STARTED_AT | sed -E 's/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})\+.*$/\1\2\3\4\5\6/g')
@@ -146,77 +130,94 @@ podman-build-and-push:
     - echo "============================= SET BUILD METADATA ==========================="
     - export IMAGE_CREATED=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
     - export IMAGE_REVISION=${CI_COMMIT_SHA}
+    - export IMAGE_VERSION=${BIG_VERSION}-${COMMIT_TIME}
     - echo "IMAGE_CREATED=$IMAGE_CREATED"
-    - echo "IMAGE_VERSION=${BIG_VERSION}-$(echo $COMMIT_TIME)"
+    - echo "IMAGE_VERSION=$IMAGE_VERSION"
     - echo "IMAGE_REVISION=$IMAGE_REVISION"
-    - echo "============================= LOGIN TO HARBOR =============================="
-    - podman login -u ${USERNAME} -p ${PASSWORD} ${HARBORHOST}
     - echo "======================= BUILD AND PUSH MULTI-ARCH IMAGES ==================="
-    # 创建 manifest
-    - export MANIFEST_NAME=${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-${COMMIT_TIME}
-    - export MANIFEST_LATEST=${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest
-    # 为每个架构构建镜像
+    # 定义要构建的平台
+    - export PLATFORMS=("linux/386" "linux/amd64" "linux/arm64" "linux/arm/v7")
+    - export BASE_TAG="${HARBORHOST}/gdutnic-speedtest/speedtest-x"
+    # 为每个平台构建镜像
     - |
-      PLATFORMS="linux/386 linux/amd64 linux/arm64 linux/arm/v7"
-      
-      # 创建 manifest
-      podman manifest create ${MANIFEST_NAME}
-      
-      for PLATFORM in ${PLATFORMS}; do
+      for PLATFORM in "${PLATFORMS[@]}"; do
         echo "Building for platform: ${PLATFORM}"
+        
+        # 提取架构和变体
         ARCH=$(echo ${PLATFORM} | cut -d'/' -f2)
         VARIANT=$(echo ${PLATFORM} | cut -d'/' -f3)
         
-        # 构建特定架构的镜像
+        # 构建标签后缀
         if [ -z "${VARIANT}" ]; then
           TAG_SUFFIX="${ARCH}"
-          PLATFORM_FLAG="--platform ${PLATFORM}"
         else
           TAG_SUFFIX="${ARCH}-${VARIANT}"
-          PLATFORM_FLAG="--platform ${PLATFORM}"
         fi
         
-        podman build \
-          ${PLATFORM_FLAG} \
-          --build-arg IMAGE_CREATED=${IMAGE_CREATED} \
-          --build-arg IMAGE_VERSION=${BIG_VERSION}-$(echo $COMMIT_TIME) \
-          --build-arg IMAGE_REVISION=${IMAGE_REVISION} \
-          --tag ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-${COMMIT_TIME}-${TAG_SUFFIX} \
-          --format docker \
-          .
+        echo "Building ${BASE_TAG}:${IMAGE_VERSION}-${TAG_SUFFIX}"
         
-        # 添加到 manifest
-        podman manifest add ${MANIFEST_NAME} \
-          ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-${COMMIT_TIME}-${TAG_SUFFIX}
+        # 使用 Kaniko 构建镜像
+        /kaniko/executor \
+          --context ${CI_PROJECT_DIR} \
+          --dockerfile ${CI_PROJECT_DIR}/Dockerfile \
+          --custom-platform ${PLATFORM} \
+          --destination ${BASE_TAG}:${IMAGE_VERSION}-${TAG_SUFFIX} \
+          --build-arg IMAGE_CREATED=${IMAGE_CREATED} \
+          --build-arg IMAGE_VERSION=${IMAGE_VERSION} \
+          --build-arg IMAGE_REVISION=${IMAGE_REVISION} \
+          --cache=true \
+          --cache-repo=${BASE_TAG}/cache \
+          --compressed-caching=false \
+          --snapshot-mode=redo \
+          --use-new-run
       done
-    - echo "========================== ANNOTATE MANIFEST IMAGES ========================"
+    - echo "=================== CREATE AND PUSH MANIFEST LIST ========================="
+    # 安装 manifest-tool 用于创建多架构 manifest
+    - apk add --no-cache curl
     - |
-      # 为 manifest 添加注解
-      podman manifest annotate ${MANIFEST_NAME} \
-        --annotation "org.opencontainers.image.created=${IMAGE_CREATED}" \
-        --annotation "org.opencontainers.image.authors=gregPerlinLi" \
-        --annotation "org.opencontainers.image.url=https://git.gdutnic.com/gregPerlinLi/gdutnic-speedtest-x" \
-        --annotation "org.opencontainers.image.documentation=https://git.gdutnic.com/gregPerlinLi/gdutnic-speedtest-x/-/blob/master/README.md" \
-        --annotation "org.opencontainers.image.source=https://git.gdutnic.com/gregPerlinLi/gdutnic-speedtest-x" \
-        --annotation "org.opencontainers.image.version=${BIG_VERSION}-$(echo $COMMIT_TIME)" \
-        --annotation "org.opencontainers.image.revision=${IMAGE_REVISION}" \
-        --annotation "org.opencontainers.image.vendor=gregPerlinLi" \
-        --annotation "org.opencontainers.image.licenses=MIT" \
-        --annotation "org.opencontainers.image.title=GDUTNIC SpeedTest X" \
-        --annotation "org.opencontainers.image.description=本仓库为网管队测速网站项目，为 LibreSpeed 的延伸项目，LibreSpeed 是一个非常轻巧的网站测速工具。" \
-        || echo "Annotation may not be fully supported, continuing..."
-    - echo "========================== PUSH MANIFEST TO HARBOR ========================="
-    # 推送带版本号的 manifest
-    - podman manifest push ${MANIFEST_NAME} docker://${MANIFEST_NAME} --all
-    # 创建并推送 latest tag
-    - podman tag ${MANIFEST_NAME} ${MANIFEST_LATEST}
-    - podman manifest push ${MANIFEST_LATEST} docker://${MANIFEST_LATEST} --all
+      curl -Lo /usr/local/bin/manifest-tool \
+        https://github.com/estesp/manifest-tool/releases/download/v2.1.6/binaries-manifest-tool-2.1.6.tar.gz
+      tar -xzf /usr/local/bin/manifest-tool -C /usr/local/bin/ manifest-tool-linux-amd64
+      mv /usr/local/bin/manifest-tool-linux-amd64 /usr/local/bin/manifest-tool
+      chmod +x /usr/local/bin/manifest-tool
+    # 创建 manifest 配置文件
+    - |
+      cat > manifest.yaml <<EOF
+      image: ${BASE_TAG}:${IMAGE_VERSION}
+      tags:
+        - ${IMAGE_VERSION}
+        - latest
+      manifests:
+        - image: ${BASE_TAG}:${IMAGE_VERSION}-386
+          platform:
+            architecture: 386
+            os: linux
+        - image: ${BASE_TAG}:${IMAGE_VERSION}-amd64
+          platform:
+            architecture: amd64
+            os: linux
+        - image: ${BASE_TAG}:${IMAGE_VERSION}-arm64
+          platform:
+            architecture: arm64
+            os: linux
+        - image: ${BASE_TAG}:${IMAGE_VERSION}-armv7
+          platform:
+            architecture: arm
+            os: linux
+            variant: v7
+      EOF
+    # 推送 manifest
+    - |
+      manifest-tool \
+        --username ${USERNAME} \
+        --password ${PASSWORD} \
+        push from-spec manifest.yaml
     - echo "============================ EXPORT IMAGE TAGS ============================="
     - echo "COMMIT_TIME=$COMMIT_TIME" >> build.env
   after_script:
-    - echo "============================ CLEAN BUILD CACHE ============================="
-    - podman system prune -a -f || true
-    - podman manifest rm ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-${COMMIT_TIME} || true
+    - echo "============================ CLEANUP COMPLETED ============================="
+    # Kaniko 不需要清理，每次都是独立的构建
+    
   artifacts:
     reports:
       dotenv: build.env
