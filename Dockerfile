@@ -6,7 +6,18 @@ ARG IMAGE_VERSION=0.0.0
 ARG IMAGE_REVISION=1
 
 # Install extensions
-RUN apt-get update && apt-get install -y \
+RUN echo '# 默认注释了源码镜像以提高 apt update 速度，如有需要可自行取消注释 \
+    deb http://mirrors.cernet.edu.cn/debian/ bullseye main contrib non-free \
+    deb-src https://mirrors.cernet.edu.cn/debian/ bullseye main contrib non-free \
+    deb http://mirrors.cernet.edu.cn/debian/ bullseye-updates main contrib non-free \
+    deb-src https://mirrors.cernet.edu.cn/debian/ bullseye-updates main contrib non-free \
+    # 以下安全更新软件源包含了官方源与镜像站配置，如有需要可自行修改注释切换 \
+    deb http://mirrors.cernet.edu.cn/debian-security bullseye-security main contrib non-free \
+    deb-src http://mirrors.cernet.edu.cn/debian-security bullseye-security main contrib non-free \
+    #deb http://security.debian.org/debian-security bullseye-security main contrib non-free \
+    #deb-src http://security.debian.org/debian-security bullseye-security main contrib non-free \
+    ' | tee /etc/apt/sources.list \
+    && apt-get update && apt-get install -y \
         libfreetype6-dev \
         libjpeg62-turbo-dev \
         libpng-dev \
