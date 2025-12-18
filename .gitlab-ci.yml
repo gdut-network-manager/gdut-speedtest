@@ -20,8 +20,10 @@ sonarqube-check:
     GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
   cache:
     key: "${CI_JOB_NAME}"
+    policy: pull-push
     paths:
-      - .sonar/cache
+      - "${SONAR_USER_HOME}/cache"
+      - sonar-scanner/
   script: 
     - sonar-scanner
   allow_failure: true
@@ -64,12 +66,35 @@ docker-build-and-push:
         --platform linux/386,linux/amd64,linux/arm64,linux/arm/v7 \
         --tag ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-${COMMIT_TIME} \
         --tag ${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest \
+        --cache-to type=s3,region=${MINIO_REIGON},bucket=${MINIO_BUCKET},name=docker-build-cache,endpoint_url=${MINIO_ENDPOINT_URL},use_path_style=true,access_key_id=${MINIO_ACCESS_KEY},secret_access_key=${MINIO_SECRET_KEY},mode=max \
+        --cache-from type=s3,region=${MINIO_REIGON},bucket=${MINIO_BUCKET},name=docker-build-cache,endpoint_url=${MINIO_ENDPOINT_URL},use_path_style=true,access_key_id=${MINIO_ACCESS_KEY},secret_access_key=${MINIO_SECRET_KEY} \
         --push \
         .
+    - echo "=================== ADD ANNOTATIONS TO MANIFEST LIST ======================"
+    - |
+      for tag in ${BIG_VERSION}-$(echo $COMMIT_TIME) latest; do
+        echo "Adding annotations to ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${tag}"
+        docker buildx imagetools create --tag ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${tag} \
+          --annotation "index:org.opencontainers.image.created=${IMAGE_CREATED}" \
+          --annotation "index:org.opencontainers.image.authors=gregPerlinLi" \
+          --annotation "index:org.opencontainers.image.url=https://git.gdutnic.com/gregPerlinLi/gdutnic-speedtest-x" \
+          --annotation "index:org.opencontainers.image.documentation=https://git.gdutnic.com/gregPerlinLi/gdutnic-speedtest-x/-/blob/master/README.md" \
+          --annotation "index:org.opencontainers.image.source=https://git.gdutnic.com/gregPerlinLi/gdutnic-speedtest-x" \
+          --annotation "index:org.opencontainers.image.version=${BIG_VERSION}-$(echo $COMMIT_TIME)" \
+          --annotation "index:org.opencontainers.image.revision=${IMAGE_REVISION}" \
+          --annotation "index:org.opencontainers.image.vendor=gregPerlinLi" \
+          --annotation "index:org.opencontainers.image.licenses=MIT" \
+          --annotation "index:org.opencontainers.image.title=GDUTNIC SpeedTest X" \
+          --annotation "index:org.opencontainers.image.description=本仓库为网管队测速网站项目，为 LibreSpeed 的延伸项目，LibreSpeed 是一个非常轻巧的网站测速工具。" \
+          ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${tag}
+      done
     #- echo "============================= CLEAN UP MIRRORS ============================="
     # - docker rmi ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-$(echo $COMMIT_TIME)
     - echo "============================ EXPORT IMAGE TAGS ============================="
     - echo "COMMIT_TIME=$COMMIT_TIME" >> build.env
+  after_script:
+    - echo "============================ CLEAN BUILD CACHE ============================="
+    - docker buildx prune -a -f
   artifacts:
     reports:
       dotenv: build.env

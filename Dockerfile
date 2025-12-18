@@ -1,5 +1,10 @@
 FROM docker.m.ixdev.cn/library/php:7.4-apache
 
+# Argument
+ARG IMAGE_CREATED=1970-01-01T00:00:00Z
+ARG IMAGE_VERSION=0.0.0
+ARG IMAGE_REVISION=1
+
 # Install extensions
 RUN apt-get update && apt-get install -y \
         libfreetype6-dev \
@@ -42,3 +47,16 @@ VOLUME ["/speedlogs"]
 
 EXPOSE 80
 CMD ["bash", "/entrypoint.sh"]
+
+# Create labels
+LABEL org.opencontainers.image.created="${IMAGE_CREATED}" \
+  org.opencontainers.image.authors="gregPerlinLi" \
+  org.opencontainers.image.url="https://git.gdutnic.com/gregPerlinLi/gdutnic-speedtest-x" \
+  org.opencontainers.image.documentation="https://git.gdutnic.com/gregPerlinLi/gdutnic-speedtest-x/-/blob/master/README.md" \
+  org.opencontainers.image.source="https://git.gdutnic.com/gregPerlinLi/gdutnic-speedtest-x" \
+  org.opencontainers.image.version="${IMAGE_VERSION}" \
+  org.opencontainers.image.revision="${IMAGE_REVISION}" \
+  org.opencontainers.image.vendor="gregPerlinLi" \
+  org.opencontainers.image.licenses="MIT" \
+  org.opencontainers.image.title="GDUTNIC SpeedTest X" \
+  org.opencontainers.image.description="本仓库为网管队测速网站项目，为 LibreSpeed 的延伸项目，LibreSpeed 是一个非常轻巧的网站测速工具。"
