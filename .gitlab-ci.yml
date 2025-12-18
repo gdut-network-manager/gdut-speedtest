@@ -109,24 +109,36 @@ podman-build-and-push:
     - dev
   before_script:
     - echo "======================== SETUP PODMAN ENVIRONMENT =========================="
-    # 配置 Podman 使用 fuse-overlayfs 和 vfs 存储驱动
+    # 配置 Podman 存储
     - mkdir -p /etc/containers
     - |
       cat > /etc/containers/storage.conf <<EOF
       [storage]
       driver = "vfs"
-      runroot = "/tmp/containers/storage"
-      graphroot = "/tmp/containers/storage"
+      runroot = "/var/run/containers/storage"
+      graphroot = "/var/lib/containers/storage"
       [storage.options]
-      mount_program = "/usr/bin/fuse-overlayfs"
+      ignore_chown_errors = "true"
+      force_mask = "0000"
       EOF
-    # 配置 subuid 和 subgid
-    - echo "podman:100000:65536" > /etc/subuid
-    - echo "podman:100000:65536" > /etc/subgid
-    # 安装必要的工具
-    - dnf install -y git qemu-user-static fuse-overlayfs
-    - podman info
+    # 配置 Podman 容器运行时 - 关键配置
+    - |
+      cat > /etc/containers/containers.conf <<EOF
+      [engine]
+      cgroup_manager = "cgroupfs"
+      events_logger = "file"
+      runtime = "crun"
+      [containers]
+      netns = "host"
+      userns = "host"
+      ipcns = "host"
+      utsns = "host"
+      cgroupns = "host"
+      EOF
+    # 安装必要工具
+    - dnf install -y git qemu-user-static
     - podman version
+    - podman info
   script:
     - echo "========================== GENERATE VERSION TAGS ==========================="
     - export COMMIT_TIME=$(echo $CI_JOB_STARTED_AT | sed -E 's/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})\+.*$/\1\2\3\4\5\6/g')
