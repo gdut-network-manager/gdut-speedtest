@@ -57,6 +57,9 @@ docker-build-and-push:
     - |
       docker buildx build \
         --platform linux/386,linux/amd64,linux/arm64,linux/arm/v7 \
+        --build-arg IMAGE_CREATED=${IMAGE_CREATED} \
+        --build-arg IMAGE_VERSION=${BIG_VERSION}-$(echo $COMMIT_TIME) \
+        --build-arg IMAGE_REVISION=${IMAGE_REVISION} \
         --tag ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-${COMMIT_TIME} \
         --tag ${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest \
         --push \
