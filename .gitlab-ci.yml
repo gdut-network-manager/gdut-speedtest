@@ -11,7 +11,7 @@ variables:
 sonarqube-check:
   stage: check-phase
   image: 
-    name: sonarsource/sonar-scanner-cli:5.0
+    name: sonarsource/sonar-scanner-cli:latest
     entrypoint: [""]
   tags:
     - dev
