@@ -33,184 +33,175 @@ sonarqube-check:
     - main
     - develop
 
-# docker-build-and-push:
-#   image: docker.m.ixdev.cn/library/docker:24-cli
-#   stage: build-phase-1
-#   tags:
-#     - Docker
-#   services:
-#     - name: docker.m.ixdev.cn/library/docker:24-cli
-#   before_script:
-#     - echo "======================== SETUP BUILDX ENVIRONMENT =========================="
-#     - docker info
-#     - apk add --no-cache git
-#     # 创建并使用 buildx builder
-#     - docker buildx create --use --name multiarch-builder --driver docker-container --platform linux/amd64,linux/arm64,linux/arm/v5,linux/arm/v6,linux/arm/v7,linux/ppc64le,linux/riscv64,linux/s390x,linux/mips64le --bootstrap || docker buildx use multiarch-builder
-#     - docker buildx inspect --bootstrap
-#   script:
-#     - echo "========================== GENERATE VERSION TAGS ==========================="
-#     - export COMMIT_TIME=$(echo $CI_JOB_STARTED_AT | sed -E 's/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})\+.*$/\1\2\3\4\5\6/g')
-#     - echo "The commit timestamp is $(echo $COMMIT_TIME | sed 's/[-T:.]//g')"
-#     - echo "============================= LOGIN TO HARBOR =============================="
-#     - docker login -u ${USERNAME} -p ${PASSWORD} ${HARBORHOST}
-#     # - echo "=========================== BUILD DOCKER IMAGES ============================"
-#     # - docker build -t ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-$(echo $COMMIT_TIME) .
-#     # - echo "========================== TAG IMAGES WITH LATEST =========================="
-#     # - docker tag ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-$(echo $COMMIT_TIME) ${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest
-#     # - echo "========================== PUSH IMAGES TO HARBOR ==========================="
-#     # - docker push ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-$(echo $COMMIT_TIME)
-#     # - docker push ${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest
-#     - echo "======================= BUILD AND PUSH DOCKER IMAGES ======================="
-#     - |
-#       docker buildx build \
-#         --platform linux/386,linux/amd64,linux/arm64,linux/arm/v7 \
-#         --tag ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-${COMMIT_TIME} \
-#         --tag ${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest \
-#         --cache-to type=s3,region=${MINIO_REIGON},bucket=${MINIO_BUCKET},name=docker-build-cache,endpoint_url=${MINIO_ENDPOINT_URL},use_path_style=true,access_key_id=${MINIO_ACCESS_KEY},secret_access_key=${MINIO_SECRET_KEY},mode=max \
-#         --cache-from type=s3,region=${MINIO_REIGON},bucket=${MINIO_BUCKET},name=docker-build-cache,endpoint_url=${MINIO_ENDPOINT_URL},use_path_style=true,access_key_id=${MINIO_ACCESS_KEY},secret_access_key=${MINIO_SECRET_KEY} \
-#         --push \
-#         .
-#     - echo "=================== ADD ANNOTATIONS TO MANIFEST LIST ======================"
-#     - |
-#       for tag in ${BIG_VERSION}-$(echo $COMMIT_TIME) latest; do
-#         echo "Adding annotations to ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${tag}"
-#         docker buildx imagetools create --tag ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${tag} \
-#           --annotation "index:org.opencontainers.image.created=${IMAGE_CREATED}" \
-#           --annotation "index:org.opencontainers.image.authors=gregPerlinLi" \
-#           --annotation "index:org.opencontainers.image.url=https://git.gdutnic.com/gregPerlinLi/gdutnic-speedtest-x" \
-#           --annotation "index:org.opencontainers.image.documentation=https://git.gdutnic.com/gregPerlinLi/gdutnic-speedtest-x/-/blob/master/README.md" \
-#           --annotation "index:org.opencontainers.image.source=https://git.gdutnic.com/gregPerlinLi/gdutnic-speedtest-x" \
-#           --annotation "index:org.opencontainers.image.version=${BIG_VERSION}-$(echo $COMMIT_TIME)" \
-#           --annotation "index:org.opencontainers.image.revision=${IMAGE_REVISION}" \
-#           --annotation "index:org.opencontainers.image.vendor=gregPerlinLi" \
-#           --annotation "index:org.opencontainers.image.licenses=MIT" \
-#           --annotation "index:org.opencontainers.image.title=GDUTNIC SpeedTest X" \
-#           --annotation "index:org.opencontainers.image.description=本仓库为网管队测速网站项目，为 LibreSpeed 的延伸项目，LibreSpeed 是一个非常轻巧的网站测速工具。" \
-#           ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${tag}
-#       done
-#     #- echo "============================= CLEAN UP MIRRORS ============================="
-#     # - docker rmi ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-$(echo $COMMIT_TIME)
-#     - echo "============================ EXPORT IMAGE TAGS ============================="
-#     - echo "COMMIT_TIME=$COMMIT_TIME" >> build.env
-#   after_script:
-#     - echo "============================ CLEAN BUILD CACHE ============================="
-#     - docker buildx prune -a -f
-#   artifacts:
-#     reports:
-#       dotenv: build.env
-#     expire_in: 30 min
-#   only:
-#     - master
-
-kaniko-build-and-push:
-  image: gcr.io/kaniko-project/executor:v1.23.2-debug
+docker-build-and-push:
+  image: docker.m.ixdev.cn/library/docker:24-cli
   stage: build-phase-1
   tags:
-    - dev
+    - Docker
+  services:
+    - name: docker.m.ixdev.cn/library/docker:24-cli
   before_script:
-    - echo "======================== SETUP KANIKO ENVIRONMENT =========================="
-    # 配置认证信息
-    - mkdir -p /kaniko/.docker
-    - |
-      cat > /kaniko/.docker/config.json <<EOF
-      {
-        "auths": {
-          "${HARBORHOST}": {
-            "auth": "$(printf '%s:%s' "${USERNAME}" "${PASSWORD}" | base64 | tr -d '\n')"
-          }
-        }
-      }
-      EOF
-    - echo "Kaniko version:"
-    - /kaniko/executor version
+    - echo "======================== SETUP BUILDX ENVIRONMENT =========================="
+    - docker info
+    - apk add --no-cache git
+    # 创建并使用 buildx builder
+    - docker buildx create --use --name multiarch-builder --driver docker-container --platform linux/amd64,linux/arm64,linux/arm/v5,linux/arm/v6,linux/arm/v7,linux/ppc64le,linux/riscv64,linux/s390x,linux/mips64le --bootstrap || docker buildx use multiarch-builder
+    - docker buildx inspect --bootstrap
   script:
     - echo "========================== GENERATE VERSION TAGS ==========================="
     - export COMMIT_TIME=$(echo $CI_JOB_STARTED_AT | sed -E 's/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})\+.*$/\1\2\3\4\5\6/g')
-    - export IMAGE_CREATED=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
-    - export IMAGE_REVISION=${CI_COMMIT_SHA}
-    - export IMAGE_VERSION=${BIG_VERSION}-${COMMIT_TIME}
-    - export BASE_TAG="${HARBORHOST}/gdutnic-speedtest/speedtest-x"
-    - echo "IMAGE_VERSION=$IMAGE_VERSION"
-    - echo "======================= BUILD AND PUSH MULTI-ARCH IMAGES ==================="
-    # 使用 set 命令设置位置参数
+    - echo "The commit timestamp is $(echo $COMMIT_TIME | sed 's/[-T:.]//g')"
+    - echo "============================= LOGIN TO HARBOR =============================="
+    - docker login -u ${USERNAME} -p ${PASSWORD} ${HARBORHOST}
+    - echo "======================= BUILD AND PUSH DOCKER IMAGES ======================="
     - |
-      set -- "linux/386:386" "linux/amd64:amd64" "linux/arm64:arm64" "linux/arm/v7:armv7"
-      
-      for ITEM in "$@"; do
-        PLATFORM="${ITEM%%:*}"
-        TAG_SUFFIX="${ITEM##*:}"
-        
-        echo "========================================"
-        echo "Building for platform: ${PLATFORM}"
-        echo "Tag suffix: ${TAG_SUFFIX}"
-        echo "========================================"
-        
-        /kaniko/executor \
-          --context "${CI_PROJECT_DIR}" \
-          --dockerfile "${CI_PROJECT_DIR}/Dockerfile" \
-          --custom-platform "${PLATFORM}" \
-          --destination "${BASE_TAG}:${IMAGE_VERSION}-${TAG_SUFFIX}" \
-          --build-arg IMAGE_CREATED="${IMAGE_CREATED}" \
-          --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
-          --build-arg IMAGE_REVISION="${IMAGE_REVISION}" \
-          --cache=true \
-          --cache-repo="${BASE_TAG}/cache" \
-          --compressed-caching=false \
-          --snapshot-mode=redo \
-          --use-new-run \
-          --push-retry=3
-        
-        echo "✓ Successfully built and pushed ${TAG_SUFFIX}"
+      docker buildx build \
+        --platform linux/386,linux/amd64,linux/arm64,linux/arm/v7 \
+        --tag ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-${COMMIT_TIME} \
+        --tag ${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest \
+        --push \
+        .
+    - echo "=================== ADD ANNOTATIONS TO MANIFEST LIST ======================"
+    - |
+      for tag in ${BIG_VERSION}-$(echo $COMMIT_TIME) latest; do
+        echo "Adding annotations to ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${tag}"
+        docker buildx imagetools create --tag ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${tag} \
+          --annotation "index:org.opencontainers.image.created=${IMAGE_CREATED}" \
+          --annotation "index:org.opencontainers.image.authors=gregPerlinLi" \
+          --annotation "index:org.opencontainers.image.url=https://git.gdutnic.com/gregPerlinLi/gdutnic-speedtest-x" \
+          --annotation "index:org.opencontainers.image.documentation=https://git.gdutnic.com/gregPerlinLi/gdutnic-speedtest-x/-/blob/master/README.md" \
+          --annotation "index:org.opencontainers.image.source=https://git.gdutnic.com/gregPerlinLi/gdutnic-speedtest-x" \
+          --annotation "index:org.opencontainers.image.version=${BIG_VERSION}-$(echo $COMMIT_TIME)" \
+          --annotation "index:org.opencontainers.image.revision=${IMAGE_REVISION}" \
+          --annotation "index:org.opencontainers.image.vendor=gregPerlinLi" \
+          --annotation "index:org.opencontainers.image.licenses=MIT" \
+          --annotation "index:org.opencontainers.image.title=GDUTNIC SpeedTest X" \
+          --annotation "index:org.opencontainers.image.description=本仓库为网管队测速网站项目，为 LibreSpeed 的延伸项目，LibreSpeed 是一个非常轻巧的网站测速工具。" \
+          ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${tag}
       done
-    - echo "=================== CREATE AND PUSH MANIFEST LIST ========================="
-    - |
-      # 下载 manifest-tool
-      wget -q -O /tmp/manifest-tool https://github.com/estesp/manifest-tool/releases/download/v2.1.6/manifest-tool-linux-amd64
-      chmod +x /tmp/manifest-tool
-      
-      # 创建 manifest 配置
-      cat > /tmp/manifest.yaml <<EOF
-      image: ${BASE_TAG}:${IMAGE_VERSION}
-      tags:
-        - ${IMAGE_VERSION}
-        - latest
-      manifests:
-        - image: ${BASE_TAG}:${IMAGE_VERSION}-386
-          platform:
-            architecture: 386
-            os: linux
-        - image: ${BASE_TAG}:${IMAGE_VERSION}-amd64
-          platform:
-            architecture: amd64
-            os: linux
-        - image: ${BASE_TAG}:${IMAGE_VERSION}-arm64
-          platform:
-            architecture: arm64
-            os: linux
-        - image: ${BASE_TAG}:${IMAGE_VERSION}-armv7
-          platform:
-            architecture: arm
-            os: linux
-            variant: v7
-      EOF
-      
-      # 推送 manifest
-      /tmp/manifest-tool \
-        --username "${USERNAME}" \
-        --password "${PASSWORD}" \
-        push from-spec /tmp/manifest.yaml
-    
+    #- echo "============================= CLEAN UP MIRRORS ============================="
+    # - docker rmi ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-$(echo $COMMIT_TIME)
+    - echo "============================ EXPORT IMAGE TAGS ============================="
     - echo "COMMIT_TIME=$COMMIT_TIME" >> build.env
   after_script:
-    - echo "============================ CLEANUP COMPLETED ============================="
-    # Kaniko 不需要清理，每次都是独立的构建
-    
+    - echo "============================ CLEAN BUILD CACHE ============================="
+    - docker buildx prune -a -f
   artifacts:
     reports:
       dotenv: build.env
     expire_in: 30 min
   only:
     - master
+
+# kaniko-build-and-push:
+#   image: gcr.io/kaniko-project/executor:v1.23.2-debug
+#   stage: build-phase-1
+#   tags:
+#     - dev
+#   before_script:
+#     - echo "======================== SETUP KANIKO ENVIRONMENT =========================="
+#     # 配置认证信息
+#     - mkdir -p /kaniko/.docker
+#     - |
+#       cat > /kaniko/.docker/config.json <<EOF
+#       {
+#         "auths": {
+#           "${HARBORHOST}": {
+#             "auth": "$(printf '%s:%s' "${USERNAME}" "${PASSWORD}" | base64 | tr -d '\n')"
+#           }
+#         }
+#       }
+#       EOF
+#     - echo "Kaniko version:"
+#     - /kaniko/executor version
+#   script:
+#     - echo "========================== GENERATE VERSION TAGS ==========================="
+#     - export COMMIT_TIME=$(echo $CI_JOB_STARTED_AT | sed -E 's/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})\+.*$/\1\2\3\4\5\6/g')
+#     - export IMAGE_CREATED=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+#     - export IMAGE_REVISION=${CI_COMMIT_SHA}
+#     - export IMAGE_VERSION=${BIG_VERSION}-${COMMIT_TIME}
+#     - export BASE_TAG="${HARBORHOST}/gdutnic-speedtest/speedtest-x"
+#     - echo "IMAGE_VERSION=$IMAGE_VERSION"
+#     - echo "======================= BUILD AND PUSH MULTI-ARCH IMAGES ==================="
+#     # 使用 set 命令设置位置参数
+#     - |
+#       set -- "linux/386:386" "linux/amd64:amd64" "linux/arm64:arm64" "linux/arm/v7:armv7"
+      
+#       for ITEM in "$@"; do
+#         PLATFORM="${ITEM%%:*}"
+#         TAG_SUFFIX="${ITEM##*:}"
+        
+#         echo "========================================"
+#         echo "Building for platform: ${PLATFORM}"
+#         echo "Tag suffix: ${TAG_SUFFIX}"
+#         echo "========================================"
+        
+#         /kaniko/executor \
+#           --context "${CI_PROJECT_DIR}" \
+#           --dockerfile "${CI_PROJECT_DIR}/Dockerfile" \
+#           --custom-platform "${PLATFORM}" \
+#           --destination "${BASE_TAG}:${IMAGE_VERSION}-${TAG_SUFFIX}" \
+#           --build-arg IMAGE_CREATED="${IMAGE_CREATED}" \
+#           --build-arg IMAGE_VERSION="${IMAGE_VERSION}" \
+#           --build-arg IMAGE_REVISION="${IMAGE_REVISION}" \
+#           --cache=true \
+#           --cache-repo="${BASE_TAG}/cache" \
+#           --compressed-caching=false \
+#           --snapshot-mode=redo \
+#           --use-new-run \
+#           --push-retry=3
+        
+#         echo "✓ Successfully built and pushed ${TAG_SUFFIX}"
+#       done
+#     - echo "=================== CREATE AND PUSH MANIFEST LIST ========================="
+#     - |
+#       # 下载 manifest-tool
+#       wget -q -O /tmp/manifest-tool https://ghfast.top/https://github.com/estesp/manifest-tool/releases/download/v2.1.6/manifest-tool-linux-amd64
+#       chmod +x /tmp/manifest-tool
+      
+#       # 创建 manifest 配置
+#       cat > /tmp/manifest.yaml <<EOF
+#       image: ${BASE_TAG}:${IMAGE_VERSION}
+#       tags:
+#         - ${IMAGE_VERSION}
+#         - latest
+#       manifests:
+#         - image: ${BASE_TAG}:${IMAGE_VERSION}-386
+#           platform:
+#             architecture: 386
+#             os: linux
+#         - image: ${BASE_TAG}:${IMAGE_VERSION}-amd64
+#           platform:
+#             architecture: amd64
+#             os: linux
+#         - image: ${BASE_TAG}:${IMAGE_VERSION}-arm64
+#           platform:
+#             architecture: arm64
+#             os: linux
+#         - image: ${BASE_TAG}:${IMAGE_VERSION}-armv7
+#           platform:
+#             architecture: arm
+#             os: linux
+#             variant: v7
+#       EOF
+      
+#       # 推送 manifest
+#       /tmp/manifest-tool \
+#         --username "${USERNAME}" \
+#         --password "${PASSWORD}" \
+#         push from-spec /tmp/manifest.yaml
+    
+#     - echo "COMMIT_TIME=$COMMIT_TIME" >> build.env
+#   after_script:
+#     - echo "============================ CLEANUP COMPLETED ============================="
+#     # Kaniko 不需要清理，每次都是独立的构建
+    
+#   artifacts:
+#     reports:
+#       dotenv: build.env
+#     expire_in: 30 min
+#   only:
+#     - master
 
 image-sign:
   image: ubuntu:22.04
