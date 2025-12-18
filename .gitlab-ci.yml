@@ -109,17 +109,24 @@ podman-build-and-push:
     - dev
   before_script:
     - echo "======================== SETUP PODMAN ENVIRONMENT =========================="
-    - podman info
-    - dnf install -y git
-    # 配置 Podman 使用多架构构建
-    - podman version
-    # 安装 qemu-user-static 以支持多架构模拟
-    - dnf install -y qemu-user-static
-    # 注册 binfmt_misc（如果 runner 支持）
+    # 配置 Podman 使用 fuse-overlayfs 和 vfs 存储驱动
+    - mkdir -p /etc/containers
     - |
-      if [ -f /proc/sys/fs/binfmt_misc/register ]; then
-        echo "binfmt_misc is available"
-      fi
+      cat > /etc/containers/storage.conf <<EOF
+      [storage]
+      driver = "vfs"
+      runroot = "/tmp/containers/storage"
+      graphroot = "/tmp/containers/storage"
+      [storage.options]
+      mount_program = "/usr/bin/fuse-overlayfs"
+      EOF
+    # 配置 subuid 和 subgid
+    - echo "podman:100000:65536" > /etc/subuid
+    - echo "podman:100000:65536" > /etc/subgid
+    # 安装必要的工具
+    - dnf install -y git qemu-user-static fuse-overlayfs
+    - podman info
+    - podman version
   script:
     - echo "========================== GENERATE VERSION TAGS ==========================="
     - export COMMIT_TIME=$(echo $CI_JOB_STARTED_AT | sed -E 's/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})\+.*$/\1\2\3\4\5\6/g')
