@@ -102,28 +102,24 @@ sonarqube-check:
 #   only:
 #     - master
 
-docker-build-and-push:
-  # 使用官方 Podman 稳定版镜像
-  image: quay.io/podman/stable
+podman-build-and-push:
+  image: quay.io/podman/stable:latest
   stage: build-phase-1
   tags:
     - dev
-  variables:
-    # 无特权环境下，vfs 兼容性最好，但速度较慢。
-    # 如果 Runner 配置了 fuse-overlayfs，可以尝试改成 'overlay'
-    STORAGE_DRIVER: vfs
-    # 显式指定构建格式为 Docker 兼容格式
-    BUILDAH_FORMAT: docker
-  # 移除 services 块，Podman 不需要 docker daemon
   before_script:
     - echo "======================== SETUP PODMAN ENVIRONMENT =========================="
     - podman info
-    # 安装 git 和 qemu-user-static (用于多架构构建)
-    # 注意：quay.io/podman/stable 基于 Fedora，使用 dnf
-    - dnf install -y git qemu-user-static
-    - echo "============================= LOGIN TO HARBOR =============================="
-    # Podman 登录语法与 Docker 相同
-    - podman login -u ${USERNAME} -p ${PASSWORD} ${HARBORHOST}
+    - dnf install -y git
+    # 配置 Podman 使用多架构构建
+    - podman version
+    # 安装 qemu-user-static 以支持多架构模拟
+    - dnf install -y qemu-user-static
+    # 注册 binfmt_misc（如果 runner 支持）
+    - |
+      if [ -f /proc/sys/fs/binfmt_misc/register ]; then
+        echo "binfmt_misc is available"
+      fi
   script:
     - echo "========================== GENERATE VERSION TAGS ==========================="
     - export COMMIT_TIME=$(echo $CI_JOB_STARTED_AT | sed -E 's/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})\+.*$/\1\2\3\4\5\6/g')
@@ -131,50 +127,77 @@ docker-build-and-push:
     - echo "============================= SET BUILD METADATA ==========================="
     - export IMAGE_CREATED=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
     - export IMAGE_REVISION=${CI_COMMIT_SHA}
-    - export FULL_VERSION_TAG="${BIG_VERSION}-$(echo $COMMIT_TIME)"
     - echo "IMAGE_CREATED=$IMAGE_CREATED"
-    - echo "IMAGE_VERSION=$FULL_VERSION_TAG"
+    - echo "IMAGE_VERSION=${BIG_VERSION}-$(echo $COMMIT_TIME)"
     - echo "IMAGE_REVISION=$IMAGE_REVISION"
-    - echo "======================= BUILD PODMAN IMAGES ======================="
-    # 1. 创建本地 manifest list (相当于 Docker 的多架构构建容器)
-    - podman manifest create local-manifest
-    # 2. 构建多架构镜像并加入到 manifest list 中
-    # 注意：移除了 BuildKit 特有的 S3 缓存参数，因为 Podman 原生不支持该语法
+    - echo "============================= LOGIN TO HARBOR =============================="
+    - podman login -u ${USERNAME} -p ${PASSWORD} ${HARBORHOST}
+    - echo "======================= BUILD AND PUSH MULTI-ARCH IMAGES ==================="
+    # 创建 manifest
+    - export MANIFEST_NAME=${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-${COMMIT_TIME}
+    - export MANIFEST_LATEST=${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest
+    # 为每个架构构建镜像
     - |
-      podman build \
-        --platform linux/386,linux/amd64,linux/arm64,linux/arm/v7 \
-        --manifest local-manifest \
-        --build-arg IMAGE_CREATED=${IMAGE_CREATED} \
-        --build-arg IMAGE_VERSION=${FULL_VERSION_TAG} \
-        --build-arg IMAGE_REVISION=${IMAGE_REVISION} \
-        .
-    - echo "=================== ADD ANNOTATIONS TO MANIFEST LIST ======================"
-    # 3. 在推送前添加注解 (Podman 方式)
+      PLATFORMS="linux/386 linux/amd64 linux/arm64 linux/arm/v7"
+      
+      # 创建 manifest
+      podman manifest create ${MANIFEST_NAME}
+      
+      for PLATFORM in ${PLATFORMS}; do
+        echo "Building for platform: ${PLATFORM}"
+        ARCH=$(echo ${PLATFORM} | cut -d'/' -f2)
+        VARIANT=$(echo ${PLATFORM} | cut -d'/' -f3)
+        
+        # 构建特定架构的镜像
+        if [ -z "${VARIANT}" ]; then
+          TAG_SUFFIX="${ARCH}"
+          PLATFORM_FLAG="--platform ${PLATFORM}"
+        else
+          TAG_SUFFIX="${ARCH}-${VARIANT}"
+          PLATFORM_FLAG="--platform ${PLATFORM}"
+        fi
+        
+        podman build \
+          ${PLATFORM_FLAG} \
+          --build-arg IMAGE_CREATED=${IMAGE_CREATED} \
+          --build-arg IMAGE_VERSION=${BIG_VERSION}-$(echo $COMMIT_TIME) \
+          --build-arg IMAGE_REVISION=${IMAGE_REVISION} \
+          --tag ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-${COMMIT_TIME}-${TAG_SUFFIX} \
+          --format docker \
+          .
+        
+        # 添加到 manifest
+        podman manifest add ${MANIFEST_NAME} \
+          ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-${COMMIT_TIME}-${TAG_SUFFIX}
+      done
+    - echo "========================== ANNOTATE MANIFEST IMAGES ========================"
     - |
-      podman manifest annotate --annotation "org.opencontainers.image.created=${IMAGE_CREATED}" local-manifest
-      podman manifest annotate --annotation "org.opencontainers.image.authors=gregPerlinLi" local-manifest
-      podman manifest annotate --annotation "org.opencontainers.image.url=https://git.gdutnic.com/gregPerlinLi/gdutnic-speedtest-x" local-manifest
-      podman manifest annotate --annotation "org.opencontainers.image.documentation=https://git.gdutnic.com/gregPerlinLi/gdutnic-speedtest-x/-/blob/master/README.md" local-manifest
-      podman manifest annotate --annotation "org.opencontainers.image.source=https://git.gdutnic.com/gregPerlinLi/gdutnic-speedtest-x" local-manifest
-      podman manifest annotate --annotation "org.opencontainers.image.version=${FULL_VERSION_TAG}" local-manifest
-      podman manifest annotate --annotation "org.opencontainers.image.revision=${IMAGE_REVISION}" local-manifest
-      podman manifest annotate --annotation "org.opencontainers.image.vendor=gregPerlinLi" local-manifest
-      podman manifest annotate --annotation "org.opencontainers.image.licenses=MIT" local-manifest
-      podman manifest annotate --annotation "org.opencontainers.image.title=GDUTNIC SpeedTest X" local-manifest
-      podman manifest annotate --annotation "org.opencontainers.image.description=本仓库为网管队测速网站项目，为 LibreSpeed 的延伸项目，LibreSpeed 是一个非常轻巧的网站测速工具。" local-manifest
-    - echo "========================== PUSH IMAGES TO HARBOR ==========================="
-    # 4. 推送 Manifest 到 Harbor (分别推送版本号 tag 和 latest tag)
-    # 注意：Podman 推送 manifest 需要指定 transport (docker://)
-    - podman manifest push local-manifest docker://${HARBORHOST}/gdutnic-speedtest/speedtest-x:${FULL_VERSION_TAG}
-    - podman manifest push local-manifest docker://${HARBORHOST}/gdutnic-speedtest/speedtest-x:latest
+      # 为 manifest 添加注解
+      podman manifest annotate ${MANIFEST_NAME} \
+        --annotation "org.opencontainers.image.created=${IMAGE_CREATED}" \
+        --annotation "org.opencontainers.image.authors=gregPerlinLi" \
+        --annotation "org.opencontainers.image.url=https://git.gdutnic.com/gregPerlinLi/gdutnic-speedtest-x" \
+        --annotation "org.opencontainers.image.documentation=https://git.gdutnic.com/gregPerlinLi/gdutnic-speedtest-x/-/blob/master/README.md" \
+        --annotation "org.opencontainers.image.source=https://git.gdutnic.com/gregPerlinLi/gdutnic-speedtest-x" \
+        --annotation "org.opencontainers.image.version=${BIG_VERSION}-$(echo $COMMIT_TIME)" \
+        --annotation "org.opencontainers.image.revision=${IMAGE_REVISION}" \
+        --annotation "org.opencontainers.image.vendor=gregPerlinLi" \
+        --annotation "org.opencontainers.image.licenses=MIT" \
+        --annotation "org.opencontainers.image.title=GDUTNIC SpeedTest X" \
+        --annotation "org.opencontainers.image.description=本仓库为网管队测速网站项目，为 LibreSpeed 的延伸项目，LibreSpeed 是一个非常轻巧的网站测速工具。" \
+        || echo "Annotation may not be fully supported, continuing..."
+    - echo "========================== PUSH MANIFEST TO HARBOR ========================="
+    # 推送带版本号的 manifest
+    - podman manifest push ${MANIFEST_NAME} docker://${MANIFEST_NAME} --all
+    # 创建并推送 latest tag
+    - podman tag ${MANIFEST_NAME} ${MANIFEST_LATEST}
+    - podman manifest push ${MANIFEST_LATEST} docker://${MANIFEST_LATEST} --all
     - echo "============================ EXPORT IMAGE TAGS ============================="
     - echo "COMMIT_TIME=$COMMIT_TIME" >> build.env
   after_script:
     - echo "============================ CLEAN BUILD CACHE ============================="
-    # Podman 清理命令
-    - podman system prune -a -f
-    # 如果创建了 manifest list，也可以单独删除
-    - podman manifest rm local-manifest || true
+    - podman system prune -a -f || true
+    - podman manifest rm ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${BIG_VERSION}-${COMMIT_TIME} || true
   artifacts:
     reports:
       dotenv: build.env
