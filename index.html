@@ -13,9 +13,22 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     
+    <script>
+        // Theme initialization to prevent FOUC
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'auto';
+            if (savedTheme === 'dark' || (savedTheme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
@@ -55,35 +68,57 @@
         /* Grid background */
         .bg-grid {
             background-size: 40px 40px;
+            background-image: linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+        }
+        .dark .bg-grid {
             background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
                               linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
         }
         
         /* Glassmorphism */
         .glass-panel {
-            background: rgba(20, 21, 38, 0.4);
+            background: rgba(255, 255, 255, 0.45);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.06);
+        }
+        .dark .glass-panel {
+            background: rgba(20, 21, 38, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
         
         /* Glowing CTA */
         .cta-glow {
-            box-shadow: 0 0 20px rgba(4, 183, 254, 0.4), inset 0 0 20px rgba(4, 183, 254, 0.1);
+            box-shadow: 0 0 20px rgba(4, 183, 254, 0.2), inset 0 0 20px rgba(4, 183, 254, 0.05);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        .dark .cta-glow {
+            box-shadow: 0 0 20px rgba(4, 183, 254, 0.4), inset 0 0 20px rgba(4, 183, 254, 0.1);
+        }
         .cta-glow:hover {
-            box-shadow: 0 0 30px rgba(4, 183, 254, 0.7), inset 0 0 30px rgba(4, 183, 254, 0.3);
+            box-shadow: 0 0 30px rgba(4, 183, 254, 0.4), inset 0 0 30px rgba(4, 183, 254, 0.15);
             transform: scale(1.05);
         }
+        .dark .cta-glow:hover {
+            box-shadow: 0 0 30px rgba(4, 183, 254, 0.7), inset 0 0 30px rgba(4, 183, 254, 0.3);
+        }
         .cta-running {
+            box-shadow: 0 0 20px rgba(255, 113, 230, 0.2), inset 0 0 20px rgba(255, 113, 230, 0.05);
+            border-color: rgba(255, 113, 230, 0.3);
+        }
+        .dark .cta-running {
             box-shadow: 0 0 20px rgba(255, 113, 230, 0.4), inset 0 0 20px rgba(255, 113, 230, 0.1);
             border-color: rgba(255, 113, 230, 0.5);
         }
         .cta-running:hover {
-            box-shadow: 0 0 30px rgba(255, 113, 230, 0.7), inset 0 0 30px rgba(255, 113, 230, 0.3);
+            box-shadow: 0 0 30px rgba(255, 113, 230, 0.4), inset 0 0 30px rgba(255, 113, 230, 0.15);
             transform: scale(1.05);
+        }
+        .dark .cta-running:hover {
+            box-shadow: 0 0 30px rgba(255, 113, 230, 0.7), inset 0 0 30px rgba(255, 113, 230, 0.3);
         }
         
         /* Animations */
@@ -103,13 +138,13 @@
     </style>
     <script type="text/javascript" src="speedtest.js"></script>
 </head>
-<body class="bg-[#0a0a0f] text-white font-myriad min-h-screen overflow-x-hidden relative selection:bg-cyan-500/30">
+<body class="bg-[#f1f5f9] dark:bg-[#0a0a0f] text-slate-800 dark:text-white font-myriad min-h-screen overflow-x-hidden relative selection:bg-cyan-500/30 transition-colors duration-300">
 
     <!-- Ambient Background -->
     <div class="fixed inset-0 z-0 pointer-events-none">
-        <div class="absolute inset-0 bg-grid opacity-30"></div>
-        <div class="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-cyan-600/20 rounded-full blur-[120px] animate-pulse-glow"></div>
-        <div class="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-purple-600/20 rounded-full blur-[120px] animate-pulse-glow" style="animation-delay: 3s;"></div>
+        <div class="absolute inset-0 bg-grid opacity-30 dark:opacity-30"></div>
+        <div class="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-sky-400/10 dark:bg-cyan-600/20 rounded-full blur-[120px] animate-pulse-glow"></div>
+        <div class="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-rose-400/10 dark:bg-purple-600/20 rounded-full blur-[120px] animate-pulse-glow" style="animation-delay: 3s;"></div>
     </div>
 
     <!-- Main Content -->
@@ -117,12 +152,25 @@
         
         <!-- Header Island -->
         <header class="glass-panel rounded-3xl p-6 mb-8 w-full flex flex-col sm:flex-row items-center justify-between gap-4">
-            <h1 class="text-2xl sm:text-3xl font-bold tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-400 drop-shadow-sm">
-                GDUTNIC 测速网站
-            </h1>
-            <div class="flex gap-3 bg-black/40 p-1.5 rounded-full border border-white/10 shadow-inner">
-                <a href="https://speed4.gdutnic.com" class="px-5 py-1.5 rounded-full text-sm font-medium hover:bg-white/10 transition-colors">IPv4</a>
-                <a href="https://speed6.gdutnic.com" class="px-5 py-1.5 rounded-full text-sm font-medium hover:bg-white/10 transition-colors">IPv6</a>
+            <div class="flex items-center gap-3">
+                <img src="logo.png" alt="Logo" class="h-8 w-8 sm:h-10 sm:w-10 object-contain rounded-xl shadow-sm" onerror="this.outerHTML='<svg class=\'h-8 w-8 sm:h-10 sm:w-10 text-cyan-500\' fill=\'currentColor\' viewBox=\'0 0 24 24\'><path d=\'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5\'/></svg>'">
+                <h1 class="text-2xl sm:text-3xl font-bold tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-cyan-500 to-purple-500 dark:from-cyan-400 dark:to-purple-400 drop-shadow-sm">
+                    GDUTNIC 测速网站
+                </h1>
+            </div>
+            <div class="flex flex-col sm:flex-row items-center gap-4">
+                <!-- Theme Switcher -->
+                <div class="relative flex items-center bg-black/5 dark:bg-black/40 p-1 rounded-full border border-black/5 dark:border-white/10 shadow-inner">
+                    <div id="theme-slider" class="absolute h-7 w-16 bg-white dark:bg-white/10 rounded-full shadow-sm transition-transform duration-300 ease-out"></div>
+                    <button onclick="setTheme('light')" id="btn-theme-light" class="relative z-10 w-16 h-7 flex items-center justify-center text-xs font-medium text-slate-600 dark:text-gray-400 transition-colors">☀️ 浅色</button>
+                    <button onclick="setTheme('dark')" id="btn-theme-dark" class="relative z-10 w-16 h-7 flex items-center justify-center text-xs font-medium text-slate-600 dark:text-gray-400 transition-colors">🌙 深色</button>
+                    <button onclick="setTheme('auto')" id="btn-theme-auto" class="relative z-10 w-16 h-7 flex items-center justify-center text-xs font-medium text-slate-600 dark:text-gray-400 transition-colors">💻 自动</button>
+                </div>
+                
+                <div class="flex gap-2 bg-black/5 dark:bg-black/40 p-1.5 rounded-full border border-black/5 dark:border-white/10 shadow-inner">
+                    <a href="https://speed4.gdutnic.com" class="px-4 py-1 rounded-full text-sm font-medium text-slate-700 dark:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-colors">IPv4</a>
+                    <a href="https://speed6.gdutnic.com" class="px-4 py-1 rounded-full text-sm font-medium text-slate-700 dark:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-colors">IPv6</a>
+                </div>
             </div>
         </header>
 
@@ -131,9 +179,9 @@
             
             <!-- CTA Island -->
             <div class="md:col-span-12 flex justify-center items-center py-4">
-                <button id="startStopBtn" onclick="startStop()" class="relative group w-56 h-16 rounded-full glass-panel border border-cyan-500/50 cta-glow overflow-hidden flex items-center justify-center">
-                    <div class="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <span id="startStopText" class="relative z-10 text-xl font-bold tracking-wider text-cyan-50 drop-shadow-md">开始测速</span>
+                <button id="startStopBtn" onclick="startStop()" class="relative group w-56 h-16 rounded-full glass-panel border border-cyan-500/30 dark:border-cyan-500/50 cta-glow overflow-hidden flex items-center justify-center">
+                    <div class="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 dark:from-cyan-500/20 dark:to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <span id="startStopText" class="relative z-10 text-xl font-bold tracking-wider text-cyan-600 dark:text-cyan-50 drop-shadow-sm dark:drop-shadow-md">开始测速</span>
                 </button>
             </div>
 
@@ -141,74 +189,124 @@
             <div class="md:col-span-4 flex flex-col gap-6">
                 <div class="glass-panel rounded-3xl p-6 flex-1 flex flex-col justify-center items-center relative overflow-hidden group">
                     <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50 group-hover:opacity-100 transition-opacity"></div>
-                    <div class="text-gray-400 text-sm font-medium mb-2 uppercase tracking-widest">平均延迟</div>
+                    <div class="text-slate-500 dark:text-gray-400 text-sm font-medium mb-2 uppercase tracking-widest">平均延迟</div>
                     <div class="flex items-baseline gap-2">
-                        <span id="pingText" class="font-futura text-5xl font-bold text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">0</span>
-                        <span class="text-cyan-400 font-medium">ms</span>
+                        <span id="pingText" class="font-futura text-5xl font-bold text-slate-800 dark:text-white drop-shadow-sm dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">0</span>
+                        <span class="text-cyan-500 dark:text-cyan-400 font-medium">ms</span>
                     </div>
                 </div>
                 <div class="glass-panel rounded-3xl p-6 flex-1 flex flex-col justify-center items-center relative overflow-hidden group">
                     <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-50 group-hover:opacity-100 transition-opacity"></div>
-                    <div class="text-gray-400 text-sm font-medium mb-2 uppercase tracking-widest">抖动</div>
+                    <div class="text-slate-500 dark:text-gray-400 text-sm font-medium mb-2 uppercase tracking-widest">抖动</div>
                     <div class="flex items-baseline gap-2">
-                        <span id="jitText" class="font-futura text-5xl font-bold text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">0</span>
-                        <span class="text-purple-400 font-medium">ms</span>
+                        <span id="jitText" class="font-futura text-5xl font-bold text-slate-800 dark:text-white drop-shadow-sm dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">0</span>
+                        <span class="text-purple-500 dark:text-purple-400 font-medium">ms</span>
                     </div>
                 </div>
             </div>
 
             <!-- Download Gauge Island -->
             <div class="md:col-span-4 glass-panel rounded-3xl p-6 flex flex-col items-center justify-center relative">
-                <div class="text-gray-400 text-sm font-medium mb-2 uppercase tracking-widest">下载速度</div>
+                <div class="text-slate-500 dark:text-gray-400 text-sm font-medium mb-2 uppercase tracking-widest">下载速度</div>
                 <div class="relative w-full aspect-square max-w-[260px]">
                     <canvas id="dlMeter" class="absolute inset-0 w-full h-full"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center mt-6">
-                        <span id="dlText" class="font-futura text-5xl font-bold text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">0.00</span>
-                        <span class="text-cyan-400 font-medium mt-1">Mbps</span>
+                        <span id="dlText" class="font-futura text-5xl font-bold text-slate-800 dark:text-white drop-shadow-sm dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">0.00</span>
+                        <span class="text-cyan-500 dark:text-cyan-400 font-medium mt-1">Mbps</span>
                     </div>
                 </div>
             </div>
 
             <!-- Upload Gauge Island -->
             <div class="md:col-span-4 glass-panel rounded-3xl p-6 flex flex-col items-center justify-center relative">
-                <div class="text-gray-400 text-sm font-medium mb-2 uppercase tracking-widest">上传速度</div>
+                <div class="text-slate-500 dark:text-gray-400 text-sm font-medium mb-2 uppercase tracking-widest">上传速度</div>
                 <div class="relative w-full aspect-square max-w-[260px]">
                     <canvas id="ulMeter" class="absolute inset-0 w-full h-full"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center mt-6">
-                        <span id="ulText" class="font-futura text-5xl font-bold text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">0.00</span>
-                        <span class="text-purple-400 font-medium mt-1">Mbps</span>
+                        <span id="ulText" class="font-futura text-5xl font-bold text-slate-800 dark:text-white drop-shadow-sm dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">0.00</span>
+                        <span class="text-purple-500 dark:text-purple-400 font-medium mt-1">Mbps</span>
                     </div>
                 </div>
             </div>
 
             <!-- IP Info Island -->
             <div class="md:col-span-12 glass-panel rounded-3xl p-5 flex justify-center items-center min-h-[60px]">
-                <span id="ip" class="text-gray-300 font-medium text-sm sm:text-base tracking-wide"></span>
+                <span id="ip" class="text-slate-600 dark:text-gray-300 font-medium text-sm sm:text-base tracking-wide"></span>
             </div>
         </div>
 
         <!-- Footer Dock Island -->
-        <footer class="glass-panel rounded-full px-8 py-4 w-full max-w-4xl mt-auto flex flex-wrap justify-center items-center gap-x-6 gap-y-3 text-sm text-gray-400">
-            <a href="./results.html" target="_blank" class="hover:text-cyan-400 transition-colors flex items-center gap-1.5 font-medium text-white">
+        <footer class="glass-panel rounded-full px-8 py-4 w-full max-w-4xl mt-auto flex flex-wrap justify-center items-center gap-x-6 gap-y-3 text-sm text-slate-500 dark:text-gray-400">
+            <a href="./results.html" target="_blank" class="hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors flex items-center gap-1.5 font-medium text-slate-700 dark:text-white">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                 测速记录
             </a>
             <span class="opacity-20 hidden sm:inline">|</span>
-            <a target="_blank" href="https://docs.stunic.gdut.edu.cn/s/be177bff-ab91-4d06-a216-4b0a61ee1eaf" class="hover:text-cyan-400 transition-colors">网站介绍</a>
+            <a target="_blank" href="https://docs.stunic.gdut.edu.cn/s/be177bff-ab91-4d06-a216-4b0a61ee1eaf" class="hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors">网站介绍</a>
             <span class="opacity-20 hidden sm:inline">|</span>
-            <a target="_blank" href="https://www.gdut.edu.cn/" class="hover:text-cyan-400 transition-colors">广东工业大学</a>
+            <a target="_blank" href="https://www.gdut.edu.cn/" class="hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors">广东工业大学</a>
             <span class="opacity-20 hidden sm:inline">|</span>
-            <a target="_blank" href="https://nic.gdut.edu.cn/" class="hover:text-cyan-400 transition-colors">网络中心</a>
+            <a target="_blank" href="https://nic.gdut.edu.cn/" class="hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors">网络中心</a>
             <span class="opacity-20 hidden sm:inline">|</span>
-            <a target="_blank" href="https://selfmanager.gdut.edu.cn" class="hover:text-cyan-400 transition-colors">自助服务</a>
+            <a target="_blank" href="https://selfmanager.gdut.edu.cn" class="hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors">自助服务</a>
             <span class="opacity-20 hidden sm:inline">|</span>
-            <a target="_blank" href="https://docs.stunic.gdut.edu.cn/s/95811be2-7486-456b-a5dd-39df2bc6f472" class="hover:text-cyan-400 transition-colors">用网教程</a>
+            <a target="_blank" href="https://docs.stunic.gdut.edu.cn/s/95811be2-7486-456b-a5dd-39df2bc6f472" class="hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors">用网教程</a>
             <span class="opacity-20 hidden sm:inline">|</span>
-            <a target="_blank" href="https://docs.stunic.gdut.edu.cn/s/95811be2-7486-456b-a5dd-39df2bc6f472/doc/5qch5zut572r5oql5lu5rig6ygt-wqTC4eXJsq" class="hover:text-cyan-400 transition-colors">校园网报修</a>
+            <a target="_blank" href="https://docs.stunic.gdut.edu.cn/s/95811be2-7486-456b-a5dd-39df2bc6f472/doc/5qch5zut572r5oql5lu5rig6ygt-wqTC4eXJsq" class="hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors">校园网报修</a>
         </footer>
     </div>
 
     <script type="text/javascript">
+        // Theme Switcher Logic
+        function setTheme(theme) {
+            localStorage.setItem('theme', theme);
+            applyTheme();
+        }
+
+        function applyTheme() {
+            const theme = localStorage.getItem('theme') || 'auto';
+            const isDark = theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            
+            // Update slider position
+            const slider = document.getElementById('theme-slider');
+            const btnLight = document.getElementById('btn-theme-light');
+            const btnDark = document.getElementById('btn-theme-dark');
+            const btnAuto = document.getElementById('btn-theme-auto');
+            
+            if (slider && btnLight && btnDark && btnAuto) {
+                btnLight.classList.remove('text-cyan-600', 'dark:text-cyan-400');
+                btnDark.classList.remove('text-cyan-600', 'dark:text-cyan-400');
+                btnAuto.classList.remove('text-cyan-600', 'dark:text-cyan-400');
+                
+                if (theme === 'light') {
+                    slider.style.transform = 'translateX(0)';
+                    btnLight.classList.add('text-cyan-600', 'dark:text-cyan-400');
+                } else if (theme === 'dark') {
+                    slider.style.transform = 'translateX(4rem)'; // 16 * 0.25rem = 4rem
+                    btnDark.classList.add('text-cyan-600', 'dark:text-cyan-400');
+                } else {
+                    slider.style.transform = 'translateX(8rem)';
+                    btnAuto.classList.add('text-cyan-600', 'dark:text-cyan-400');
+                }
+            }
+        }
+
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            if (localStorage.getItem('theme') === 'auto') {
+                applyTheme();
+            }
+        });
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', applyTheme);
+
         // INITIALIZE SPEEDTEST
         var s = new Speedtest(); // create speedtest object
         
@@ -218,7 +316,6 @@
         var key_prefix = Date.parse(new Date());
         
         // Colors for gauges
-        var meterBk = "rgba(255, 255, 255, 0.05)";
         var dlColorBegin = "#04b7fe", dlColorEnd = "#70ffb1";
         var ulColorBegin = "#7a55d4", ulColorEnd = "#ff71e6";
         
@@ -236,6 +333,12 @@
             var dp = window.devicePixelRatio || 1;
             var cw = c.clientWidth * dp;
             var ch = c.clientHeight * dp;
+            
+            // Check theme dynamically
+            var isDark = document.documentElement.classList.contains('dark');
+            var currentBk = isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)";
+            var innerCoreColor = isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.2)";
+            var progBkColor = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
             
             if (c.width !== cw || c.height !== ch) {
                 c.width = cw;
@@ -264,7 +367,7 @@
         
             // Draw Background Track
             ctx.beginPath();
-            ctx.strokeStyle = bk;
+            ctx.strokeStyle = currentBk;
             ctx.lineWidth = lineWidth;
             ctx.lineCap = "round";
             ctx.arc(centerX, centerY, radius, startAngle, endAngle);
@@ -283,7 +386,7 @@
                 ctx.strokeStyle = g;
                 ctx.lineWidth = lineWidth;
                 ctx.lineCap = "round";
-                ctx.shadowBlur = 20 * dp;
+                ctx.shadowBlur = (isDark ? 20 : 10) * dp;
                 ctx.shadowColor = colorBegin;
                 ctx.arc(centerX, centerY, radius, startAngle, currentEndAngle);
                 ctx.stroke();
@@ -293,7 +396,7 @@
                 
                 // Draw inner bright core
                 ctx.beginPath();
-                ctx.strokeStyle = "rgba(255,255,255,0.5)";
+                ctx.strokeStyle = innerCoreColor;
                 ctx.lineWidth = lineWidth * 0.3;
                 ctx.lineCap = "round";
                 ctx.arc(centerX, centerY, radius, startAngle, currentEndAngle);
@@ -307,7 +410,7 @@
                 var progWidth = cw * 0.4;
                 
                 ctx.beginPath();
-                ctx.strokeStyle = "rgba(255,255,255,0.1)";
+                ctx.strokeStyle = progBkColor;
                 ctx.lineWidth = lineWidth * 0.4;
                 ctx.lineCap = "round";
                 ctx.moveTo(progStartX, progY);
@@ -346,31 +449,31 @@
                 s.abort();
                 uiData = null;
                 btn.classList.remove("cta-running");
-                btn.classList.add("border-cyan-500/50");
-                btn.classList.remove("border-purple-500/50");
+                btn.classList.add("border-cyan-500/30", "dark:border-cyan-500/50");
+                btn.classList.remove("border-purple-500/30", "dark:border-purple-500/50");
                 text.textContent = "开始测速";
-                text.classList.remove("text-purple-50");
-                text.classList.add("text-cyan-50");
+                text.classList.remove("text-purple-600", "dark:text-purple-50");
+                text.classList.add("text-cyan-600", "dark:text-cyan-50");
                 initUI();
             } else {
                 // test is not running, begin
                 btn.classList.add("cta-running");
-                btn.classList.remove("border-cyan-500/50");
-                btn.classList.add("border-purple-500/50");
+                btn.classList.remove("border-cyan-500/30", "dark:border-cyan-500/50");
+                btn.classList.add("border-purple-500/30", "dark:border-purple-500/50");
                 text.textContent = "终止测速";
-                text.classList.remove("text-cyan-50");
-                text.classList.add("text-purple-50");
+                text.classList.remove("text-cyan-600", "dark:text-cyan-50");
+                text.classList.add("text-purple-600", "dark:text-purple-50");
                 
                 s.onupdate = function(data){
                     uiData = data;
                 };
                 s.onend = function(aborted){
                     btn.classList.remove("cta-running");
-                    btn.classList.add("border-cyan-500/50");
-                    btn.classList.remove("border-purple-500/50");
+                    btn.classList.add("border-cyan-500/30", "dark:border-cyan-500/50");
+                    btn.classList.remove("border-purple-500/30", "dark:border-purple-500/50");
                     text.textContent = "开始测速";
-                    text.classList.remove("text-purple-50");
-                    text.classList.add("text-cyan-50");
+                    text.classList.remove("text-purple-600", "dark:text-purple-50");
+                    text.classList.add("text-cyan-600", "dark:text-cyan-50");
                     updateUI(true);
                 };
                 s.start();
@@ -434,8 +537,8 @@
             var dlProg = uiData ? Number(uiData.dlProgress) : 0;
             var ulProg = uiData ? Number(uiData.ulProgress) : 0;
         
-            drawMeter(document.getElementById("dlMeter"), dlTarget, meterBk, dlColorBegin, dlColorEnd, true, dlProg);
-            drawMeter(document.getElementById("ulMeter"), ulTarget, meterBk, ulColorBegin, ulColorEnd, false, ulProg);
+            drawMeter(document.getElementById("dlMeter"), dlTarget, null, dlColorBegin, dlColorEnd, true, dlProg);
+            drawMeter(document.getElementById("ulMeter"), ulTarget, null, ulColorBegin, ulColorEnd, false, ulProg);
             
             updateUI();
         }

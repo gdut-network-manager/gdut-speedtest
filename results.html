@@ -5,31 +5,92 @@
     <title>测速结果 | GDUTNIC 测速网站</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {}
+            }
+        }
+    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
+
+        :root {
+            --bg-gradient-start: #f1f5f9;
+            --bg-gradient-end: #e2e8f0;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --glass-bg: rgba(255, 255, 255, 0.45);
+            --glass-border: rgba(0, 0, 0, 0.05);
+            --glass-header: rgba(255, 255, 255, 0.6);
+            --blob-1: rgba(56, 189, 248, 0.3);
+            --blob-2: rgba(168, 85, 247, 0.3);
+            --speed-fast: #16a34a;
+            --speed-fast-glow: rgba(22, 163, 74, 0.2);
+            --speed-medium: #2563eb;
+            --speed-medium-glow: rgba(37, 99, 235, 0.2);
+            --speed-slow: #475569;
+            --table-border: rgba(0, 0, 0, 0.05);
+            --hover-bg: rgba(0, 0, 0, 0.03);
+            --sort-icon: rgba(0, 0, 0, 0.3);
+            --sort-icon-active: #334155;
+            --scrollbar-track: rgba(0, 0, 0, 0.02);
+            --scrollbar-thumb: rgba(0, 0, 0, 0.1);
+            --scrollbar-thumb-hover: rgba(0, 0, 0, 0.2);
+        }
+
+        .dark {
+            --bg-gradient-start: #0f172a;
+            --bg-gradient-end: #1e1b4b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.05);
+            --glass-header: rgba(15, 23, 42, 0.6);
+            --blob-1: rgba(59, 130, 246, 0.2);
+            --blob-2: rgba(168, 85, 247, 0.2);
+            --speed-fast: #4ade80;
+            --speed-fast-glow: rgba(74, 222, 128, 0.4);
+            --speed-medium: #60a5fa;
+            --speed-medium-glow: rgba(96, 165, 250, 0.4);
+            --speed-slow: #94a3b8;
+            --table-border: rgba(255, 255, 255, 0.05);
+            --hover-bg: rgba(255, 255, 255, 0.05);
+            --sort-icon: rgba(255, 255, 255, 0.3);
+            --sort-icon-active: #ffffff;
+            --scrollbar-track: rgba(255, 255, 255, 0.02);
+            --scrollbar-thumb: rgba(255, 255, 255, 0.1);
+            --scrollbar-thumb-hover: rgba(255, 255, 255, 0.2);
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-            color: #f8fafc;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            color: var(--text-main);
             min-height: 100vh;
             margin: 0;
             background-attachment: fixed;
+            transition: background 0.3s ease, color 0.3s ease;
         }
 
         /* Glassmorphism utilities */
         .glass-panel {
-            background: rgba(255, 255, 255, 0.03);
+            background: var(--glass-bg);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+        .dark .glass-panel {
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
         .glass-header {
-            background: rgba(15, 23, 42, 0.6);
+            background: var(--glass-header);
             backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid var(--table-border);
+            transition: background 0.3s ease, border-color 0.3s ease;
         }
 
         /* Custom Scrollbar */
@@ -38,15 +99,15 @@
             height: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.02);
+            background: var(--scrollbar-track);
             border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--scrollbar-thumb);
             border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: var(--scrollbar-thumb-hover);
         }
 
         /* Animations */
@@ -66,15 +127,15 @@
 
         /* Speed Glows */
         .speed-fast {
-            color: #4ade80;
-            text-shadow: 0 0 10px rgba(74, 222, 128, 0.4);
+            color: var(--speed-fast);
+            text-shadow: 0 0 10px var(--speed-fast-glow);
         }
         .speed-medium {
-            color: #60a5fa;
-            text-shadow: 0 0 10px rgba(96, 165, 250, 0.4);
+            color: var(--speed-medium);
+            text-shadow: 0 0 10px var(--speed-medium-glow);
         }
         .speed-slow {
-            color: #94a3b8;
+            color: var(--speed-slow);
         }
 
         th {
@@ -83,7 +144,7 @@
             transition: background-color 0.2s;
         }
         th:hover {
-            background-color: rgba(255, 255, 255, 0.05);
+            background-color: var(--hover-bg);
         }
         
         .sort-icon {
@@ -97,16 +158,89 @@
             opacity: 0.3;
         }
         .sort-asc .sort-icon {
-            border-bottom: 4px solid #fff;
+            border-bottom: 4px solid var(--sort-icon-active);
             border-top: none;
             opacity: 1;
         }
         .sort-desc .sort-icon {
-            border-top: 4px solid #fff;
+            border-top: 4px solid var(--sort-icon-active);
             border-bottom: none;
             opacity: 1;
         }
+        
+        .blob-1 {
+            background-color: var(--blob-1);
+        }
+        .blob-2 {
+            background-color: var(--blob-2);
+        }
+        
+        .table-row-hover:hover {
+            background-color: var(--hover-bg);
+        }
+        
+        .border-table {
+            border-color: var(--table-border);
+        }
+        
+        .divide-table > :not([hidden]) ~ :not([hidden]) {
+            border-color: var(--table-border);
+        }
+
     </style>
+
+    <script>
+        // Theme Management
+        function applyTheme(theme) {
+            const isDark = theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            
+            // Update active button state
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                if (btn.dataset.theme === theme) {
+                    btn.classList.add('bg-white', 'dark:bg-white/20', 'text-slate-900', 'dark:text-white', 'shadow-sm');
+                    btn.classList.remove('text-slate-600', 'dark:text-slate-400');
+                } else {
+                    btn.classList.remove('bg-white', 'dark:bg-white/20', 'text-slate-900', 'dark:text-white', 'shadow-sm');
+                    btn.classList.add('text-slate-600', 'dark:text-slate-400');
+                }
+            });
+        }
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme-mode') || 'auto';
+            applyTheme(savedTheme);
+
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const theme = e.target.dataset.theme;
+                    localStorage.setItem('theme-mode', theme);
+                    applyTheme(theme);
+                    // Dispatch event for other pages/components if needed
+                    window.dispatchEvent(new Event('theme-changed'));
+                });
+            });
+
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+                if (localStorage.getItem('theme-mode') === 'auto' || !localStorage.getItem('theme-mode')) {
+                    applyTheme('auto');
+                }
+            });
+        }
+        
+        // Run immediately to prevent flash
+        const initialTheme = localStorage.getItem('theme-mode') || 'auto';
+        if (initialTheme === 'dark' || (initialTheme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        }
+        
+        document.addEventListener('DOMContentLoaded', initTheme);
+    </script>
+
 </head>
 <body class="p-4 md:p-8">
 
@@ -114,26 +248,34 @@
         <!-- Header Island -->
         <div class="glass-panel rounded-2xl p-6 mb-8 flex flex-col md:flex-row justify-between items-center gap-4 relative overflow-hidden">
             <!-- Decorative glow -->
-            <div class="absolute -top-24 -right-24 w-48 h-48 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
-            <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+            <div class="absolute -top-24 -right-24 w-48 h-48 blob-1 rounded-full mix-blend-multiply filter blur-3xl"></div>
+            <div class="absolute -bottom-24 -left-24 w-48 h-48 blob-2 rounded-full mix-blend-multiply filter blur-3xl"></div>
             
             <div class="relative z-10">
                 <h1 class="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
                     GDUTNIC 测速结果
                 </h1>
-                <p class="text-slate-400 text-sm mt-1">网络速度监控仪表盘</p>
+                <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">网络速度监控仪表盘</p>
             </div>
             
+            
             <div class="flex items-center gap-4 relative z-10">
-                <a href="./chart.html" target="_blank" class="px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-300 flex items-center gap-2 text-sm font-medium group">
+                <!-- Theme Switcher -->
+                <div class="flex gap-1 bg-black/5 dark:bg-black/40 p-1 rounded-full border border-black/10 dark:border-white/10 shadow-inner">
+                    <button class="theme-btn px-3 py-1.5 rounded-full text-xs font-medium transition-colors text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white" data-theme="light">Light</button>
+                    <button class="theme-btn px-3 py-1.5 rounded-full text-xs font-medium transition-colors text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white" data-theme="dark">Dark</button>
+                    <button class="theme-btn px-3 py-1.5 rounded-full text-xs font-medium transition-colors text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white" data-theme="auto">Auto</button>
+                </div>
+
+                <a href="./chart.html" target="_blank" class="px-5 py-2.5 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 transition-all duration-300 flex items-center gap-2 text-sm font-medium group">
                     <svg class="w-4 h-4 text-blue-400 group-hover:text-blue-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
                     查看线性图表
                 </a>
                 <div class="group relative">
-                    <button class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition-all duration-300 text-slate-300">
+                    <button class="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 flex items-center justify-center transition-all duration-300 text-slate-700 dark:text-slate-300">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </button>
-                    <div class="absolute right-0 top-12 w-64 p-3 rounded-xl glass-panel text-xs text-slate-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                    <div class="absolute right-0 top-12 w-64 p-3 rounded-xl glass-panel text-xs text-slate-700 dark:text-slate-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                         线性图表用于展示不同运营商在不同时段的速度表现，程序默认保留1000条测速结果，可调大此数值以获得更准确的图表分析。
                     </div>
                 </div>
@@ -145,7 +287,7 @@
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse whitespace-nowrap">
                     <thead>
-                        <tr class="glass-header text-xs uppercase tracking-wider text-slate-400">
+                        <tr class="glass-header text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
                             <th class="px-6 py-4 font-medium" data-sort="ip">IP地址 <span class="sort-icon"></span></th>
                             <th class="px-6 py-4 font-medium" data-sort="isp">运营商 <span class="sort-icon"></span></th>
                             <th class="px-6 py-4 font-medium" data-sort="addr">城市 <span class="sort-icon"></span></th>
@@ -156,10 +298,10 @@
                             <th class="px-6 py-4 font-medium" data-sort="created">测试时间 <span class="sort-icon"></span></th>
                         </tr>
                     </thead>
-                    <tbody id="table-body" class="divide-y divide-white/5 text-sm">
+                    <tbody id="table-body" class="divide-y divide-table text-sm">
                         <!-- Loading State -->
                         <tr>
-                            <td colspan="8" class="px-6 py-12 text-center text-slate-400">
+                            <td colspan="8" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
                                 <div class="flex flex-col items-center justify-center gap-3">
                                     <svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -174,16 +316,16 @@
             </div>
             
             <!-- Pagination -->
-            <div class="glass-header px-6 py-4 flex items-center justify-between border-t border-white/5">
-                <div class="text-sm text-slate-400">
-                    共 <span id="total-count" class="text-white font-medium">0</span> 条记录
+            <div class="glass-header px-6 py-4 flex items-center justify-between border-t border-table">
+                <div class="text-sm text-slate-500 dark:text-slate-400">
+                    共 <span id="total-count" class="text-slate-900 dark:text-white font-medium">0</span> 条记录
                 </div>
                 <div class="flex gap-2">
-                    <button id="prev-page" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm">上一页</button>
+                    <button id="prev-page" class="px-3 py-1.5 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm">上一页</button>
                     <div class="flex items-center px-2 text-sm">
                         <span id="current-page">1</span> / <span id="total-pages">1</span>
                     </div>
-                    <button id="next-page" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm">下一页</button>
+                    <button id="next-page" class="px-3 py-1.5 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm">下一页</button>
                 </div>
             </div>
         </div>
@@ -215,7 +357,7 @@
         function showError(msg) {
             document.getElementById('table-body').innerHTML = `
                 <tr>
-                    <td colspan="8" class="px-6 py-12 text-center text-red-400">
+                    <td colspan="8" class="px-6 py-12 text-center text-red-500 dark:text-red-400">
                         ${msg}
                     </td>
                 </tr>
@@ -261,18 +403,18 @@
             const tbody = document.getElementById('table-body');
             
             if (pageData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-8 text-center text-slate-400">暂无数据</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-8 text-center text-slate-500 dark:text-slate-400">暂无数据</td></tr>`;
             } else {
                 tbody.innerHTML = pageData.map((row, index) => `
-                    <tr class="hover:bg-white/5 transition-colors row-enter" style="animation-delay: ${index * 0.03}s">
-                        <td class="px-6 py-4 text-slate-300 font-mono text-xs">${row.ip || '-'}</td>
-                        <td class="px-6 py-4 text-slate-200">${row.isp || '-'}</td>
-                        <td class="px-6 py-4 text-slate-400">${row.addr || '-'}</td>
+                    <tr class="table-row-hover transition-colors row-enter" style="animation-delay: ${index * 0.03}s">
+                        <td class="px-6 py-4 text-slate-700 dark:text-slate-300 font-mono text-xs">${row.ip || '-'}</td>
+                        <td class="px-6 py-4 text-slate-800 dark:text-slate-200">${row.isp || '-'}</td>
+                        <td class="px-6 py-4 text-slate-500 dark:text-slate-400">${row.addr || '-'}</td>
                         <td class="px-6 py-4 text-right font-medium ${getSpeedClass(row.dspeed)}">${row.dspeed || '0.00'}</td>
                         <td class="px-6 py-4 text-right font-medium ${getSpeedClass(row.uspeed)}">${row.uspeed || '0.00'}</td>
-                        <td class="px-6 py-4 text-right text-slate-300">${row.ping || '0.00'}</td>
-                        <td class="px-6 py-4 text-right text-slate-400">${row.jitter || '0.00'}</td>
-                        <td class="px-6 py-4 text-slate-400 text-xs">${row.created || '-'}</td>
+                        <td class="px-6 py-4 text-right text-slate-700 dark:text-slate-300">${row.ping || '0.00'}</td>
+                        <td class="px-6 py-4 text-right text-slate-500 dark:text-slate-400">${row.jitter || '0.00'}</td>
+                        <td class="px-6 py-4 text-slate-500 dark:text-slate-400 text-xs">${row.created || '-'}</td>
                     </tr>
                 `).join('');
             }
