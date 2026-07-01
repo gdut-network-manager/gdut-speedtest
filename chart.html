@@ -1,188 +1,256 @@
 <!doctype html>
-<html>
-
+<html lang="zh-CN">
 <head>
-        <title>ISP Speed Chart</title>
+    <meta charset="utf-8">
+    <title>ISP Speed Chart | GDUTNIC</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="chartjs/Chart.min.js"></script>
-        <script src="chartjs/utils.js"></script>
-        <style>
-        canvas {
-                -moz-user-select: none;
-                -webkit-user-select: none;
-                -ms-user-select: none;
-                position: relative;
-                flex-grow: 1;
-                min-height: 0;
-                width: 100%;
-                height:100%;
+    <script src="chartjs/utils.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+            margin: 0;
+            background-attachment: fixed;
         }
-	div {
-		width:100%;
-		height:100%;
-	}
-        </style>
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 70vh;
+            width: 100%;
+        }
+    </style>
 </head>
+<body class="p-4 md:p-8">
 
-<body>
-        <div>
-                <canvas id="canvas"></canvas>
+    <div class="max-w-7xl mx-auto animate-fade-in">
+        <!-- Header Island -->
+        <div class="glass-panel rounded-2xl p-6 mb-8 flex flex-col md:flex-row justify-between items-center gap-4 relative overflow-hidden">
+            <div class="absolute -top-24 -right-24 w-48 h-48 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+            <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+            
+            <div class="relative z-10">
+                <h1 class="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
+                    运营商速度趋势
+                </h1>
+                <p class="text-slate-400 text-sm mt-1">24小时网络速度分布图表</p>
+            </div>
+            
+            <div class="relative z-10">
+                <a href="./results.html" class="px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-300 flex items-center gap-2 text-sm font-medium group">
+                    <svg class="w-4 h-4 text-blue-400 group-hover:text-blue-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    返回数据列表
+                </a>
+            </div>
         </div>
-        <script>
-                var color = Chart.helpers.color;
 
-async function mainfunc() {
-    var color = Chart.helpers.color;
-    //console.log(color)
-    var datareq = await fetch('backend/results-api.php');
-    //console.log(datareq)
-    var dataraw = await datareq.text();
-    //console.log(dataraw)
-    try {
-        dataraw = JSON.parse(dataraw);
-    } catch {
-        alert("Can't get data");
-        return 0;
-    }
+        <!-- Chart Island -->
+        <div class="glass-panel rounded-2xl p-4 md:p-6 relative overflow-hidden">
+            <div class="chart-container">
+                <canvas id="canvas"></canvas>
+            </div>
+        </div>
+    </div>
 
-    data_sorted = {};
-    for (const data of dataraw["data"]) {
-        let data_isp = data["isp"].split(" ").length > 1 ? data["isp"].split(" ")[0] + " " + data["isp"].split(" ")[1] : data["isp"];
-        if (data_isp in data_sorted) {
-            data_sorted[data_isp] = data_sorted[data_isp].concat([data])
-        } else {
-            data_sorted[data_isp] = [data]
+    <script>
+        async function mainfunc() {
+            var color = Chart.helpers.color;
+            var datareq = await fetch('backend/results-api.php');
+            var dataraw = await datareq.text();
+            
+            try {
+                dataraw = JSON.parse(dataraw);
+            } catch {
+                alert("Can't get data");
+                return 0;
+            }
+
+            let data_sorted = {};
+            for (const data of dataraw["data"]) {
+                let data_isp = data["isp"].split(" ").length > 1 ? data["isp"].split(" ")[0] + " " + data["isp"].split(" ")[1] : data["isp"];
+                if (data_isp in data_sorted) {
+                    data_sorted[data_isp] = data_sorted[data_isp].concat([data])
+                } else {
+                    data_sorted[data_isp] = [data]
+                }
+            }
+            
+            let datasets = []
+            for (const isp of Object.keys(data_sorted)) {
+                let ispdata_chart = {
+                    label: isp,
+                    data: []
+                }
+                for (const ispdata of data_sorted[isp]) {
+                    let [t_h, t_m, t_s] = ispdata["created"].split(" ")[1].split(":");
+                    ispdata_chart["data"] = ispdata_chart["data"].concat([{
+                        x: t_h * 1.0 + t_m / 60 + t_s / 3600,
+                        y: ispdata["dspeed"],
+                        label: ispdata
+                    }]);
+                }
+                datasets = datasets.concat([ispdata_chart])
+            }
+            
+            datasets = datasets.sort((a, b) => a["data"].length < b["data"].length ? 1 : -1);
+            
+            // Modern glowing colors
+            const modernColors = [
+                { border: '#4ade80', bg: 'rgba(74, 222, 128, 0.2)' }, // Green
+                { border: '#60a5fa', bg: 'rgba(96, 165, 250, 0.2)' }, // Blue
+                { border: '#c084fc', bg: 'rgba(192, 132, 252, 0.2)' }, // Purple
+                { border: '#f472b6', bg: 'rgba(244, 114, 182, 0.2)' }, // Pink
+                { border: '#fbbf24', bg: 'rgba(251, 191, 36, 0.2)' }   // Yellow
+            ];
+
+            for (const [i, data] of datasets.entries()) {
+                if (i < modernColors.length) {
+                    datasets[i]["borderColor"] = modernColors[i].border;
+                    datasets[i]["backgroundColor"] = modernColors[i].bg;
+                    datasets[i]["pointBackgroundColor"] = modernColors[i].border;
+                    datasets[i]["pointBorderColor"] = 'rgba(255,255,255,0.8)';
+                    datasets[i]["pointBorderWidth"] = 1;
+                    datasets[i]["pointRadius"] = 4;
+                    datasets[i]["pointHoverRadius"] = 6;
+                } else {
+                    datasets[i]["borderColor"] = 'rgba(148, 163, 184, 0.5)';
+                    datasets[i]["backgroundColor"] = 'rgba(148, 163, 184, 0.1)';
+                    datasets[i]["pointBackgroundColor"] = 'rgba(148, 163, 184, 0.5)';
+                    datasets[i]["pointRadius"] = 3;
+                }
+            }
+
+            let scatterChartData = {
+                datasets: datasets
+            }
+
+            Chart.defaults.global.defaultFontColor = '#94a3b8';
+            Chart.defaults.global.defaultFontFamily = "'Inter', sans-serif";
+
+            var ctx = document.getElementById('canvas').getContext('2d');
+            window.myScatter = Chart.Scatter(ctx, {
+                data: scatterChartData,
+                options: {
+                    title: {
+                        display: false
+                    },
+                    legend: {
+                        labels: {
+                            fontColor: '#cbd5e1',
+                            usePointStyle: true,
+                            padding: 20
+                        }
+                    },
+                    tooltips: {
+                        mode: 'nearest',
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleFontColor: '#f8fafc',
+                        bodyFontColor: '#cbd5e1',
+                        footerFontColor: '#94a3b8',
+                        borderColor: 'rgba(255,255,255,0.1)',
+                        borderWidth: 1,
+                        cornerRadius: 8,
+                        padding: 12,
+                        callbacks: {
+                            title: function(TooltipItem, data){  
+                                return data["datasets"][TooltipItem[0]["datasetIndex"]]["label"]
+                            },
+                            label: function(TooltipItem, data){
+                                return data["datasets"][TooltipItem["datasetIndex"]]["data"][TooltipItem["index"]]["label"]["isp"];
+                            }, 
+                            footer: function(TooltipItem, data){
+                                let displaydata = data["datasets"][TooltipItem[0]["datasetIndex"]]["data"][TooltipItem[0]["index"]]["label"]; 
+                                let showdict = { 
+                                    "Location": displaydata["addr"],
+                                    "Download": displaydata["dspeed"] + " Mbps",
+                                    "Upload": displaydata["uspeed"] + " Mbps",
+                                    "Ping": displaydata["ping"] + " ms",
+                                    "Jitter": displaydata["jitter"] + " ms",
+                                    "IP": displaydata["ip"],
+                                    "Time": displaydata["created"]
+                                };
+                                let showtext = "";
+                                for (const k of Object.keys(showdict)){
+                                    showtext += k + ": " + showdict[k] + "\n";
+                                }
+                                return showtext;
+                            }
+                        },
+                        footerFontStyle: 'normal'
+                    },
+                    scales: {
+                        yAxes: [{
+                            type: 'linear',
+                            position: 'bottom',
+                            gridLines: {
+                                color: 'rgba(255, 255, 255, 0.05)',
+                                zeroLineColor: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                fontColor: '#64748b',
+                                userCallback: function(tick) {
+                                    return tick.toString() + ' Mbps';
+                                }
+                            },
+                            scaleLabel: {
+                                labelString: 'Download Speed',
+                                display: true,
+                                fontColor: '#94a3b8'
+                            }
+                        }],
+                        xAxes: [{
+                            type: 'linear',
+                            gridLines: {
+                                color: 'rgba(255, 255, 255, 0.05)',
+                                zeroLineColor: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                fontColor: '#64748b',
+                                userCallback: function(tick) {
+                                    return tick.toString() + ':00';
+                                },
+                                beginAtZero: true,
+                                stepSize: 3,
+                                max: 24
+                            },
+                            scaleLabel: {
+                                labelString: 'Time of Day (Hours)',
+                                display: true,
+                                fontColor: '#94a3b8'
+                            }
+                        }]
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
         }
-    }
-    let datasets = []
-    for (const isp of Object.keys(data_sorted)) {
-        let ispdata_chart = {
-            label: isp,
-            data: []
-        }
-        for (const ispdata of data_sorted[isp]) {
-            let [t_h, t_m, t_s] = ispdata["created"].split(" ")[1].split(":");
-            ispdata_chart["data"] = ispdata_chart["data"].concat([{
-                x: t_h * 1.0 + t_m / 60 + t_s / 3600,
-                y: ispdata["dspeed"],
-				label: ispdata
-            }]);
-        }
-        datasets = datasets.concat([ispdata_chart])
-    }
-    datasets = datasets.sort((a, b) => a["data"].length < b["data"].length ? 1 : -1);
-    for (const [i, data] of datasets.entries()) {
-        if (i === 0) {
-            datasets[i]["borderColor"] = window.chartColors["red"];
-	    datasets[i]["backgroundColor"] = color(datasets[i]["borderColor"]).alpha(0.9).rgbString()
-        } else if (i === 1) {
-            datasets[i]["borderColor"] = "rgb(12, 176, 42)";
-	    datasets[i]["backgroundColor"] = color(datasets[i]["borderColor"]).alpha(0.9).rgbString()
-        } else if (i === 2) {
-            datasets[i]["borderColor"] = "rgb(2, 104, 219)";
-	    datasets[i]["backgroundColor"] = color(datasets[i]["borderColor"]).alpha(0.9).rgbString()
-        }
-	else{
-            datasets[i]["borderColor"] = window.chartColors["gray"];;
-            datasets[i]["backgroundColor"] = color(window.chartColors["gray"]).alpha(0.1).rgbString()
-	}
-    }
-    console.log(datasets);
-    scatterChartData = {
-        datasets: datasets
-    }
 
-    var ctx = document.getElementById('canvas').getContext('2d');
-    window.myScatter = Chart.Scatter(ctx, {
-        data: scatterChartData,
-        options: {
-            title: {
-                display: true,
-                text: 'ISP Speed Chart'
-            },
-			tooltips: {
-					mode: 'nearest',
-					callbacks: {
-						title: function(TooltipItem, data){  
-							// console.log(TooltipItem);
-							// console.log(data); 
-							// console.log(data["datasets"][TooltipItem[0]["datasetIndex"]]["label"])
-                                                        return data["datasets"][TooltipItem[0]["datasetIndex"]]["label"]
-						},
-						label:function(TooltipItem, data){
-                                                        return data["datasets"][TooltipItem["datasetIndex"]]["data"][TooltipItem["index"]]["label"]["isp"];
-                                                }, 
-						footer: function(TooltipItem, data){
-							// console.log(TooltipItem);
-							// console.log(data); 
-							displaydata = data["datasets"][TooltipItem[0]["datasetIndex"]]["data"][TooltipItem[0]["index"]]["label"]; 
-							showdict = { 
-							    location:  displaydata["addr"],
-							    Download:  displaydata["dspeed"],
-							    Upload:  displaydata["uspeed"],
-							    Ping:  displaydata["ping"],
-							    Jitter:  displaydata["jitter"],
-							    IP:  displaydata["ip"],
-							    Time:  displaydata["created"],
-							    // ISP:  displaydata["isp"],
-							};
-                                                        let showtext = ""
-                                                        for (const k of Object.keys(showdict)){
-                                                            showtext += k + ": " + showdict[k] + "\n";
-                                                        }
-                                                        return showtext
-                                                },
-
-						
-					},
-					footerFontStyle: 'normal'
-				},
-			scales: {
-					yAxes: [{
-						type: 'linear',
-						position: 'bottom',
-						ticks: {
-							userCallback: function(tick) {
-									return tick.toString() + 'Mbps';
-							},
-						},
-						scaleLabel: {
-							labelString: 'Speed',
-							display: true,
-						}
-					}],
-					xAxes: [{
-						type: 'linear',
-						ticks: {
-							userCallback: function(tick) {
-								return tick.toString() + ':00';
-							},
-							beginAtZero: true,
-							stepSize: 3,
-							max: 24
-						},
-						scaleLabel: {
-							labelString: 'Time',
-							display: true
-						}
-					}]
-				},
-		responsive: true,
-		maintainAspectRatio: false
-        }
-    });
-
-
-}
-
-
-
-                window.onload = function() {
-                        mainfunc();
-                };
-
-
-        </script>
+        window.onload = function() {
+            mainfunc();
+        };
+    </script>
 </body>
-
 </html>
-

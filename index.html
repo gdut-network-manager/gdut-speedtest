@@ -1,357 +1,457 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-<title>GDUTNIC 测速网站</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no" />
-<meta charset="UTF-8" />
-<meta name="description" content="Speed Test site.">
-<link rel="icon" href="logo-150x150.png" sizes="32x32" />
-<link rel="icon" href="logo.png" sizes="192x192" />
-<link rel="apple-touch-icon-precomposed" href="logo.png" />
-<meta name="msapplication-TileImage" content="logo.png" />
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-<meta http-equiv="Pragma" content="no-cache" />
-<meta http-equiv="Expires" content="0" />
-<script type="text/javascript" src="speedtest.js"></script>
-<script type="text/javascript">
-function I(i){return document.getElementById(i);}
-//INITIALIZE SPEEDTEST
-var s=new Speedtest(); //create speedtest object
-
-var xhr=new XMLHttpRequest();
-var url_report='./backend/report.php';
-var milestone=0;
-var key_prefix=Date.parse(new Date());
-
-var meterBk="#232f4e";
-var dlColorBegin="#04b7fe", dlColorEnd="#70ffb1",
-        ulColorBegin="#7a55d4", ulColorEnd="#ff71e6";
-var progColor=meterBk;
-
-//CODE FOR GAUGES
-function drawMeter(c,amount,bk,colorBegin, colorEnd,progress,prog){
-        var ctx=c.getContext("2d");
-        var dp=window.devicePixelRatio||1;
-        var cw=c.clientWidth*dp, ch=c.clientHeight*dp;
-        var sizScale=ch*0.0055;
-        if(c.width==cw&&c.height==ch){
-                ctx.clearRect(0,0,cw,ch);
-        }else{
-                c.width=cw;
-                c.height=ch;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GDUTNIC 测速网站</title>
+    <meta name="description" content="Speed Test site.">
+    <link rel="icon" href="logo-150x150.png" sizes="32x32" />
+    <link rel="icon" href="logo.png" sizes="192x192" />
+    <link rel="apple-touch-icon-precomposed" href="logo.png" />
+    <meta name="msapplication-TileImage" content="logo.png" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        myriad: ['MyriadPro', 'sans-serif'],
+                        futura: ['Futura LT', 'sans-serif'],
+                    },
+                    colors: {
+                        glass: 'rgba(255, 255, 255, 0.03)',
+                        glassBorder: 'rgba(255, 255, 255, 0.08)',
+                    }
+                }
+            }
         }
-        ctx.beginPath();
-        ctx.strokeStyle=bk;
-        ctx.lineWidth=12*sizScale;
-        ctx.arc(c.width/2,c.height-58*sizScale,c.height/1.8-ctx.lineWidth,-Math.PI*1.1,Math.PI*0.1);
-        ctx.stroke();
-
-        var g = ctx.createLinearGradient(0,0,180,0);  //创建渐变对象  渐变开始点和渐变结束点
-        g.addColorStop(0, colorBegin); //添加颜色点
-        g.addColorStop(1, colorEnd); //添加颜色点
-        //ctx.strokeStyle = g;     //使用渐变对象作为圆环的颜色
-
-        ctx.beginPath();
-        ctx.strokeStyle=g;
-        ctx.lineWidth=12*sizScale;
-        ctx.arc(c.width/2,c.height-58*sizScale,c.height/1.8-ctx.lineWidth,-Math.PI*1.1,amount*Math.PI*1.2-Math.PI*1.1);
-        ctx.stroke();
-        if(typeof progress !== "undefined"){
-                ctx.fillStyle=prog;
-                ctx.fillRect(c.width*0.3,c.height-16*sizScale,c.width*0.4*progress,4*sizScale);
+    </script>
+    <style>
+        @font-face {
+            font-family: 'MyriadPro';
+            src: url('./font/MyriadPro-Regular.otf') format('opentype');
+            font-weight: normal;
         }
-}
-function mbpsToAmount(s){
-        return 1-(1/(Math.pow(1.3,Math.sqrt(s))));
-}
-function format(d){
-    d=Number(d);
-    if(d<10) return d.toFixed(2);
-    if(d<100) return d.toFixed(1);
-    return d.toFixed(0);
-}
+        @font-face {
+            font-family: 'MyriadPro';
+            src: url('./font/MyriadPro-Bold.otf') format('opentype');
+            font-weight: bold;
+        }
+        @font-face {
+            font-family: 'Futura LT';
+            src: url('./font/Futura LT Book.ttf') format('truetype');
+            font-weight: normal;
+        }
+        @font-face {
+            font-family: 'Futura LT';
+            src: url('./font/Futura LT Bold.ttf') format('truetype');
+            font-weight: bold;
+        }
+        
+        /* Grid background */
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        }
+        
+        /* Glassmorphism */
+        .glass-panel {
+            background: rgba(20, 21, 38, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Glowing CTA */
+        .cta-glow {
+            box-shadow: 0 0 20px rgba(4, 183, 254, 0.4), inset 0 0 20px rgba(4, 183, 254, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .cta-glow:hover {
+            box-shadow: 0 0 30px rgba(4, 183, 254, 0.7), inset 0 0 30px rgba(4, 183, 254, 0.3);
+            transform: scale(1.05);
+        }
+        .cta-running {
+            box-shadow: 0 0 20px rgba(255, 113, 230, 0.4), inset 0 0 20px rgba(255, 113, 230, 0.1);
+            border-color: rgba(255, 113, 230, 0.5);
+        }
+        .cta-running:hover {
+            box-shadow: 0 0 30px rgba(255, 113, 230, 0.7), inset 0 0 30px rgba(255, 113, 230, 0.3);
+            transform: scale(1.05);
+        }
+        
+        /* Animations */
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.05); }
+        }
+        .animate-pulse-glow {
+            animation: pulse-glow 6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        /* Hide scrollbar */
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+    </style>
+    <script type="text/javascript" src="speedtest.js"></script>
+</head>
+<body class="bg-[#0a0a0f] text-white font-myriad min-h-screen overflow-x-hidden relative selection:bg-cyan-500/30">
 
-//UI CODE
-var uiData=null;
-function startStop(){
-    if(s.getState()==3){
-                //speedtest is running, abort
+    <!-- Ambient Background -->
+    <div class="fixed inset-0 z-0 pointer-events-none">
+        <div class="absolute inset-0 bg-grid opacity-30"></div>
+        <div class="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-cyan-600/20 rounded-full blur-[120px] animate-pulse-glow"></div>
+        <div class="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-purple-600/20 rounded-full blur-[120px] animate-pulse-glow" style="animation-delay: 3s;"></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="relative z-10 container mx-auto px-4 py-8 min-h-screen flex flex-col items-center justify-center max-w-5xl">
+        
+        <!-- Header Island -->
+        <header class="glass-panel rounded-3xl p-6 mb-8 w-full flex flex-col sm:flex-row items-center justify-between gap-4">
+            <h1 class="text-2xl sm:text-3xl font-bold tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-400 drop-shadow-sm">
+                GDUTNIC 测速网站
+            </h1>
+            <div class="flex gap-3 bg-black/40 p-1.5 rounded-full border border-white/10 shadow-inner">
+                <a href="https://speed4.gdutnic.com" class="px-5 py-1.5 rounded-full text-sm font-medium hover:bg-white/10 transition-colors">IPv4</a>
+                <a href="https://speed6.gdutnic.com" class="px-5 py-1.5 rounded-full text-sm font-medium hover:bg-white/10 transition-colors">IPv6</a>
+            </div>
+        </header>
+
+        <!-- Bento Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 w-full mb-8">
+            
+            <!-- CTA Island -->
+            <div class="md:col-span-12 flex justify-center items-center py-4">
+                <button id="startStopBtn" onclick="startStop()" class="relative group w-56 h-16 rounded-full glass-panel border border-cyan-500/50 cta-glow overflow-hidden flex items-center justify-center">
+                    <div class="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <span id="startStopText" class="relative z-10 text-xl font-bold tracking-wider text-cyan-50 drop-shadow-md">开始测速</span>
+                </button>
+            </div>
+
+            <!-- Ping & Jitter Islands -->
+            <div class="md:col-span-4 flex flex-col gap-6">
+                <div class="glass-panel rounded-3xl p-6 flex-1 flex flex-col justify-center items-center relative overflow-hidden group">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="text-gray-400 text-sm font-medium mb-2 uppercase tracking-widest">平均延迟</div>
+                    <div class="flex items-baseline gap-2">
+                        <span id="pingText" class="font-futura text-5xl font-bold text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">0</span>
+                        <span class="text-cyan-400 font-medium">ms</span>
+                    </div>
+                </div>
+                <div class="glass-panel rounded-3xl p-6 flex-1 flex flex-col justify-center items-center relative overflow-hidden group">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-50 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="text-gray-400 text-sm font-medium mb-2 uppercase tracking-widest">抖动</div>
+                    <div class="flex items-baseline gap-2">
+                        <span id="jitText" class="font-futura text-5xl font-bold text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">0</span>
+                        <span class="text-purple-400 font-medium">ms</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Download Gauge Island -->
+            <div class="md:col-span-4 glass-panel rounded-3xl p-6 flex flex-col items-center justify-center relative">
+                <div class="text-gray-400 text-sm font-medium mb-2 uppercase tracking-widest">下载速度</div>
+                <div class="relative w-full aspect-square max-w-[260px]">
+                    <canvas id="dlMeter" class="absolute inset-0 w-full h-full"></canvas>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center mt-6">
+                        <span id="dlText" class="font-futura text-5xl font-bold text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">0.00</span>
+                        <span class="text-cyan-400 font-medium mt-1">Mbps</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Gauge Island -->
+            <div class="md:col-span-4 glass-panel rounded-3xl p-6 flex flex-col items-center justify-center relative">
+                <div class="text-gray-400 text-sm font-medium mb-2 uppercase tracking-widest">上传速度</div>
+                <div class="relative w-full aspect-square max-w-[260px]">
+                    <canvas id="ulMeter" class="absolute inset-0 w-full h-full"></canvas>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center mt-6">
+                        <span id="ulText" class="font-futura text-5xl font-bold text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">0.00</span>
+                        <span class="text-purple-400 font-medium mt-1">Mbps</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- IP Info Island -->
+            <div class="md:col-span-12 glass-panel rounded-3xl p-5 flex justify-center items-center min-h-[60px]">
+                <span id="ip" class="text-gray-300 font-medium text-sm sm:text-base tracking-wide"></span>
+            </div>
+        </div>
+
+        <!-- Footer Dock Island -->
+        <footer class="glass-panel rounded-full px-8 py-4 w-full max-w-4xl mt-auto flex flex-wrap justify-center items-center gap-x-6 gap-y-3 text-sm text-gray-400">
+            <a href="./results.html" target="_blank" class="hover:text-cyan-400 transition-colors flex items-center gap-1.5 font-medium text-white">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                测速记录
+            </a>
+            <span class="opacity-20 hidden sm:inline">|</span>
+            <a target="_blank" href="https://docs.stunic.gdut.edu.cn/s/be177bff-ab91-4d06-a216-4b0a61ee1eaf" class="hover:text-cyan-400 transition-colors">网站介绍</a>
+            <span class="opacity-20 hidden sm:inline">|</span>
+            <a target="_blank" href="https://www.gdut.edu.cn/" class="hover:text-cyan-400 transition-colors">广东工业大学</a>
+            <span class="opacity-20 hidden sm:inline">|</span>
+            <a target="_blank" href="https://nic.gdut.edu.cn/" class="hover:text-cyan-400 transition-colors">网络中心</a>
+            <span class="opacity-20 hidden sm:inline">|</span>
+            <a target="_blank" href="https://selfmanager.gdut.edu.cn" class="hover:text-cyan-400 transition-colors">自助服务</a>
+            <span class="opacity-20 hidden sm:inline">|</span>
+            <a target="_blank" href="https://docs.stunic.gdut.edu.cn/s/95811be2-7486-456b-a5dd-39df2bc6f472" class="hover:text-cyan-400 transition-colors">用网教程</a>
+            <span class="opacity-20 hidden sm:inline">|</span>
+            <a target="_blank" href="https://docs.stunic.gdut.edu.cn/s/95811be2-7486-456b-a5dd-39df2bc6f472/doc/5qch5zut572r5oql5lu5rig6ygt-wqTC4eXJsq" class="hover:text-cyan-400 transition-colors">校园网报修</a>
+        </footer>
+    </div>
+
+    <script type="text/javascript">
+        // INITIALIZE SPEEDTEST
+        var s = new Speedtest(); // create speedtest object
+        
+        var xhr = new XMLHttpRequest();
+        var url_report = './backend/report.php';
+        var milestone = 0;
+        var key_prefix = Date.parse(new Date());
+        
+        // Colors for gauges
+        var meterBk = "rgba(255, 255, 255, 0.05)";
+        var dlColorBegin = "#04b7fe", dlColorEnd = "#70ffb1";
+        var ulColorBegin = "#7a55d4", ulColorEnd = "#ff71e6";
+        
+        // Easing function for smooth gauge animation
+        var currentDlAmount = 0;
+        var currentUlAmount = 0;
+        
+        function lerp(start, end, amt) {
+            return (1 - amt) * start + amt * end;
+        }
+        
+        // CODE FOR GAUGES
+        function drawMeter(c, targetAmount, bk, colorBegin, colorEnd, isDl, progress) {
+            var ctx = c.getContext("2d");
+            var dp = window.devicePixelRatio || 1;
+            var cw = c.clientWidth * dp;
+            var ch = c.clientHeight * dp;
+            
+            if (c.width !== cw || c.height !== ch) {
+                c.width = cw;
+                c.height = ch;
+            }
+        
+            // Smooth interpolation
+            if (isDl) {
+                currentDlAmount = lerp(currentDlAmount, targetAmount, 0.1);
+                var amount = currentDlAmount;
+            } else {
+                currentUlAmount = lerp(currentUlAmount, targetAmount, 0.1);
+                var amount = currentUlAmount;
+            }
+        
+            ctx.clearRect(0, 0, cw, ch);
+        
+            var centerX = cw / 2;
+            var centerY = ch / 2 + (ch * 0.1); // Offset slightly down
+            var radius = Math.min(cw, ch) / 2.2;
+            var lineWidth = radius * 0.15;
+            
+            var startAngle = Math.PI * 0.8;
+            var endAngle = Math.PI * 2.2;
+            var totalAngle = endAngle - startAngle;
+        
+            // Draw Background Track
+            ctx.beginPath();
+            ctx.strokeStyle = bk;
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = "round";
+            ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+            ctx.stroke();
+        
+            if (amount > 0) {
+                // Create Gradient
+                var g = ctx.createLinearGradient(0, centerY - radius, cw, centerY + radius);
+                g.addColorStop(0, colorBegin);
+                g.addColorStop(1, colorEnd);
+        
+                var currentEndAngle = startAngle + (totalAngle * amount);
+        
+                // Draw Glow
+                ctx.beginPath();
+                ctx.strokeStyle = g;
+                ctx.lineWidth = lineWidth;
+                ctx.lineCap = "round";
+                ctx.shadowBlur = 20 * dp;
+                ctx.shadowColor = colorBegin;
+                ctx.arc(centerX, centerY, radius, startAngle, currentEndAngle);
+                ctx.stroke();
+                
+                // Reset shadow for next draws
+                ctx.shadowBlur = 0;
+                
+                // Draw inner bright core
+                ctx.beginPath();
+                ctx.strokeStyle = "rgba(255,255,255,0.5)";
+                ctx.lineWidth = lineWidth * 0.3;
+                ctx.lineCap = "round";
+                ctx.arc(centerX, centerY, radius, startAngle, currentEndAngle);
+                ctx.stroke();
+            }
+
+            // Draw progress bar at the bottom
+            if (typeof progress !== "undefined" && progress > 0) {
+                var progY = ch * 0.95;
+                var progStartX = cw * 0.3;
+                var progWidth = cw * 0.4;
+                
+                ctx.beginPath();
+                ctx.strokeStyle = "rgba(255,255,255,0.1)";
+                ctx.lineWidth = lineWidth * 0.4;
+                ctx.lineCap = "round";
+                ctx.moveTo(progStartX, progY);
+                ctx.lineTo(progStartX + progWidth, progY);
+                ctx.stroke();
+        
+                ctx.beginPath();
+                ctx.strokeStyle = colorBegin;
+                ctx.lineWidth = lineWidth * 0.4;
+                ctx.lineCap = "round";
+                ctx.moveTo(progStartX, progY);
+                ctx.lineTo(progStartX + (progWidth * progress), progY);
+                ctx.stroke();
+            }
+        }
+        
+        function mbpsToAmount(s){
+            return 1-(1/(Math.pow(1.3,Math.sqrt(s))));
+        }
+        
+        function format(d){
+            d=Number(d);
+            if(d<10) return d.toFixed(2);
+            if(d<100) return d.toFixed(1);
+            return d.toFixed(0);
+        }
+        
+        // UI CODE
+        var uiData = null;
+        function startStop(){
+            var btn = document.getElementById("startStopBtn");
+            var text = document.getElementById("startStopText");
+            
+            if(s.getState() == 3){
+                // speedtest is running, abort
                 s.abort();
-                data=null;
-                I("startStopBtn").className="";
+                uiData = null;
+                btn.classList.remove("cta-running");
+                btn.classList.add("border-cyan-500/50");
+                btn.classList.remove("border-purple-500/50");
+                text.textContent = "开始测速";
+                text.classList.remove("text-purple-50");
+                text.classList.add("text-cyan-50");
                 initUI();
-        }else{
-                //test is not running, begin
-                I("startStopBtn").className="running";
-                s.onupdate=function(data){
-            uiData=data;
+            } else {
+                // test is not running, begin
+                btn.classList.add("cta-running");
+                btn.classList.remove("border-cyan-500/50");
+                btn.classList.add("border-purple-500/50");
+                text.textContent = "终止测速";
+                text.classList.remove("text-cyan-50");
+                text.classList.add("text-purple-50");
+                
+                s.onupdate = function(data){
+                    uiData = data;
                 };
-                s.onend=function(aborted){
-            I("startStopBtn").className="";
-            updateUI(true);
+                s.onend = function(aborted){
+                    btn.classList.remove("cta-running");
+                    btn.classList.add("border-cyan-500/50");
+                    btn.classList.remove("border-purple-500/50");
+                    text.textContent = "开始测速";
+                    text.classList.remove("text-purple-50");
+                    text.classList.add("text-cyan-50");
+                    updateUI(true);
                 };
                 s.start();
+            }
         }
-}
-//this function reads the data sent back by the test and updates the UI
-function updateUI(forced){
-        if(!forced&&s.getState()!=3) return;
-        if(uiData==null) return;
-        var status=uiData.testState;
-        I("ip").textContent=uiData.clientIp;
-        I("dlText").textContent=(status==1&&uiData.dlStatus==0)?"...":format(uiData.dlStatus);
-        drawMeter(I("dlMeter"),mbpsToAmount(Number(uiData.dlStatus*(status==1?oscillate():1))),meterBk,dlColorBegin, dlColorEnd,Number(uiData.dlProgress),progColor);
-        I("ulText").textContent=(status==3&&uiData.ulStatus==0)?"...":format(uiData.ulStatus);
-        drawMeter(I("ulMeter"),mbpsToAmount(Number(uiData.ulStatus*(status==3?oscillate():1))),meterBk,ulColorBegin, ulColorEnd,Number(uiData.ulProgress),progColor);
-        I("pingText").textContent=format(uiData.pingStatus);
-        I("jitText").textContent=format(uiData.jitterStatus);
-        var prog=(Number(uiData.dlProgress)*2+Number(uiData.ulProgress)*2+Number(uiData.pingProgress))/5;
-        // I("progress").style.width=(100*prog)+"%";
-        var ipIspArr = I("ip").textContent.split(' - ', 3);
-        var ip = ipIspArr[0];
-        var isp = ipIspArr[1];
-        var addr = ipIspArr[2] === undefined? '' :ipIspArr[2];
-        var progress = Math.floor(100*prog);
-        var key = key_prefix + "_" + ip;
-        if (progress > 20 && (progress % 10 == 0) && progress != milestone) {
-                console.log(progress);
-                var params = 'key='+key+'&ip='+ip+'&isp='+isp+'&addr='+addr+'&dspeed='+I("dlText").textContent+'&uspeed='+I("ulText").textContent+'&ping='+I("pingText").textContent
-                                                +'&jitter='+I("jitText").textContent;
+        
+        function updateUI(forced){
+            if(!forced && s.getState() != 3) return;
+            if(uiData == null) return;
+            
+            var status = uiData.testState;
+            
+            document.getElementById("ip").textContent = uiData.clientIp;
+            
+            var dlVal = (status == 1 && uiData.dlStatus == 0) ? "..." : format(uiData.dlStatus);
+            document.getElementById("dlText").textContent = dlVal;
+            
+            var ulVal = (status == 3 && uiData.ulStatus == 0) ? "..." : format(uiData.ulStatus);
+            document.getElementById("ulText").textContent = ulVal;
+            
+            document.getElementById("pingText").textContent = format(uiData.pingStatus);
+            document.getElementById("jitText").textContent = format(uiData.jitterStatus);
+            
+            var prog = (Number(uiData.dlProgress)*2 + Number(uiData.ulProgress)*2 + Number(uiData.pingProgress))/5;
+            
+            var ipIspArr = document.getElementById("ip").textContent.split(' - ', 3);
+            var ip = ipIspArr[0];
+            var isp = ipIspArr[1];
+            var addr = ipIspArr[2] === undefined ? '' : ipIspArr[2];
+            var progress = Math.floor(100 * prog);
+            var key = key_prefix + "_" + ip;
+            
+            if (progress > 20 && (progress % 10 == 0) && progress != milestone) {
+                var params = 'key='+key+'&ip='+ip+'&isp='+isp+'&addr='+addr+'&dspeed='+document.getElementById("dlText").textContent+'&uspeed='+document.getElementById("ulText").textContent+'&ping='+document.getElementById("pingText").textContent+'&jitter='+document.getElementById("jitText").textContent;
                 xhr.timeout = 3000;
                 xhr.ontimeout = function (e) {
-                        console.log('上报超时');
+                    console.log('上报超时');
                 };
                 xhr.open('POST', url_report, true);
                 xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
                 xhr.send(params);
                 milestone = progress;
+            }
         }
-}
-function oscillate(){
-        return 1+0.02*Math.sin(Date.now()/100);
-}
-//update the UI every frame
-window.requestAnimationFrame=window.requestAnimationFrame||window.webkitRequestAnimationFrame||window.mozRequestAnimationFrame||window.msRequestAnimationFrame||(function(callback,element){setTimeout(callback,1000/60);});
-function frame(){
-        requestAnimationFrame(frame);
-        updateUI();
-}
-frame(); //start frame loop
-//function to (re)initialize UI
-function initUI(){
-        drawMeter(I("dlMeter"),0,meterBk,dlColorBegin, dlColorEnd,0);
-        drawMeter(I("ulMeter"),0,meterBk,ulColorBegin, ulColorEnd,0);
-        I("dlText").textContent="";
-        I("ulText").textContent="";
-        I("pingText").textContent="";
-        I("jitText").textContent="";
-        I("ip").textContent="";
-}
-</script>
-<style type="text/css">
-        @font-face{
-                font-family: 'MyriadPro';
-                src: url('./font/MyriadPro-Regular.otf');
+        
+        function oscillate(){
+            return 1 + 0.02 * Math.sin(Date.now() / 100);
         }
-        @font-face{
-                font-family: 'MyriadPro';
-                src: url('./font/MyriadPro-Bold.otf');
-                font-weight: bold;
+        
+        // Animation loop for smooth gauges
+        window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.msRequestAnimationFrame || (function(callback,element){setTimeout(callback,1000/60);});
+        
+        function frame(){
+            requestAnimationFrame(frame);
+            
+            // Always draw meters to allow smooth easing even when not updating data
+            var status = uiData ? uiData.testState : 0;
+            var dlTarget = (uiData && status >= 1) ? mbpsToAmount(Number(uiData.dlStatus*(status==1?oscillate():1))) : 0;
+            var ulTarget = (uiData && status >= 3) ? mbpsToAmount(Number(uiData.ulStatus*(status==3?oscillate():1))) : 0;
+            
+            var dlProg = uiData ? Number(uiData.dlProgress) : 0;
+            var ulProg = uiData ? Number(uiData.ulProgress) : 0;
+        
+            drawMeter(document.getElementById("dlMeter"), dlTarget, meterBk, dlColorBegin, dlColorEnd, true, dlProg);
+            drawMeter(document.getElementById("ulMeter"), ulTarget, meterBk, ulColorBegin, ulColorEnd, false, ulProg);
+            
+            updateUI();
         }
-        html,body{
-                border:none; padding:0; margin:0;
-                background:#141526;
-                color:#f4f4f5;
+        frame(); // start frame loop
+        
+        function initUI(){
+            currentDlAmount = 0;
+            currentUlAmount = 0;
+            document.getElementById("dlText").textContent = "0.00";
+            document.getElementById("ulText").textContent = "0.00";
+            document.getElementById("pingText").textContent = "0";
+            document.getElementById("jitText").textContent = "0";
+            document.getElementById("ip").textContent = "";
         }
-        body{
-                text-align:center;
-                font-family: "MyriadPro","Microsoft YaHei",Helvetica,Arial,sans-serif;
-        }
-        h1{
-                color:#f4f4f5;
-        }
-        a{
-                cursor: pointer;
-                color: #fff;
-                text-decoration: none;
-                outline: 0;
-        }
-        a:hover{
-                color: #1cbfff;
-                text-decoration: none;
-                cursor: pointer;
-        }
-        #testWrapper{
-                margin-bottom: 2em;
-        }
-        #startStopBtn{
-                display:inline-block;
-                position: relative;
-                margin:0 auto;
-                width:8em; height:3em;
-                line-height:2.7em;
-                cursor:pointer;
-                box-shadow: 0 0 0 rgba(0,0,0,0.1), inset 0 0 0 rgba(0,0,0,0.1);
-        }
-        .start-border{
-                position: absolute;
-                top: 0;
-                left: 0;
-                width:8em;
-                height:3em;
-                border-radius: 5px;
-                box-sizing: border-box;
-                background-image: linear-gradient(#141526,#141526),linear-gradient(to bottom,#2de5d1,#1fa4e9);
-                background-color: #141526;
-                border: 2px transparent solid;
-                background-origin: border-box;
-                background-clip: content-box,border-box;
-        }
-        .start-text{
-                position: absolute;
-                margin:2px;
-                top: 0;
-                left: 0;
-                width:calc(8em - 4px);
-                height:calc(3em - 4px);
-                border-radius: 5px;
-                background-color: #ffffff00;
-        }
-        .start-text:hover{
-                background-color:#151f2f;
-        }
-        .start-text:before{
-                content:"开始测速";
-        }
-        #startStopBtn.running .start-text:before{
-                content:"终止测速";
-        }
-        #test{
-                margin-top:2em;
-                margin-bottom:1em;
-        }
-        div.testArea{
-                display:inline-block;
-                width:16em;
-                height:12.5em;
-                position:relative;
-                box-sizing:border-box;
-        }
-        div.testArea2{
-                display:inline-block;
-                width:14em;
-                height:7em;
-                position:relative;
-                box-sizing:border-box;
-                text-align:center;
-        }
-        div.testArea div.testName{
-                position:absolute;
-                top:0.1em; left:0;
-                width:100%;
-                font-size:1.4em;
-                z-index:9;
-        }
-        div.testArea2 div.testName{
-        display:block;
-        text-align:center;
-        font-size:1.4em;
-        }
-        .meterText{
-                font-family: "MyriadPro",Futura,gauge-mono,"HCo Gotham SSm",Helvetica,Arial,sans-serif;
-        }
-        div.testArea div.meterText{
-                position:absolute;
-                bottom:1.55em; left:0;
-                width:100%;
-                font-size:2.5em;
-                z-index:9;
-        }
-        div.testArea2 div.meterText{
-        display:inline-block;
-        font-size:2.5em;
-        }
-        div.meterText:empty:before{
-                content:"0.00";
-        }
-        div.testArea div.unit{
-                position:absolute;
-                bottom:2em; left:0;
-                width:100%;
-                z-index:9;
-        }
-        div.testArea2 div.unit{
-                display:inline-block;
-        }
-        div.testArea canvas{
-                position:absolute;
-                top:0; left:0; width:100%; height:100%;
-                z-index:1;
-        }
-        div.testGroup{
-                display:block;
-        margin: 0 auto;
-        }
-        @media all and (max-width:40em){
-                body{
-                        font-size:0.8em;
-                }
-        }
-</style>
-</head>
-<body>
-<h1>GDUTNIC 测速网站 ( <a href="https://speed4.gdutnic.com">IPv4</a> / <a href="https://speed6.gdutnic.com">IPv6</a> )</h1>
-<div id="testWrapper">
-        <div id="startStopBtn" onclick="startStop()">
-                <span class="start-border"></span>
-                <span class="start-text"></span>
-        </div>
-        <div id="test">
-        <div class="testGroup">
-                        <div class="testArea2">
-                                <div class="testName">平均延迟</div>
-                                <div id="pingText" class="meterText" style="color:#f4f4f5"></div>
-                                <div class="unit">ms</div>
-                        </div>
-                        <div class="testArea2">
-                                <div class="testName">抖动</div>
-                                <div id="jitText" class="meterText" style="color:#f4f4f5"></div>
-                                <div class="unit">ms</div>
-                        </div>
-                </div>
-                <div class="testGroup">
-                        <div class="testArea">
-                                <div class="testName">下载速度</div>
-                                <canvas id="dlMeter" class="meter"></canvas>
-                                <div id="dlText" class="meterText"></div>
-                                <div class="unit">Mbps</div>
-                        </div>
-                        <div class="testArea">
-                                <div class="testName">上传速度</div>
-                                <canvas id="ulMeter" class="meter"></canvas>
-                                <div id="ulText" class="meterText"></div>
-                                <div class="unit">Mbps</div>
-                        </div>
-                </div>
-                <div id="ipArea">
-                        <span id="ip"></span>
-                </div>
-        </div>
-</div>
-<p><a href="./results.html" target="_blank">查看测速记录</a></p>
-<div id="footer">
-    <a target="_blank" href="https://docs.stunic.gdut.edu.cn/s/be177bff-ab91-4d06-a216-4b0a61ee1eaf">网站介绍</a>
-    &nbsp;|&nbsp;
-    <a target="_blank" href="https://www.gdut.edu.cn/">广东工业大学首页</a>
-    &nbsp;|&nbsp;
-    <a target="_blank" href="https://nic.gdut.edu.cn/">网络中心首页</a>
-    &nbsp;|&nbsp;
-    <a target="_blank" href="https://selfmanager.gdut.edu.cn">校园网自助服务系统</a>
-    &nbsp;|&nbsp;
-    <a target="_blank" href="https://docs.stunic.gdut.edu.cn/s/95811be2-7486-456b-a5dd-39df2bc6f472">校园网用网教程</a>
-    &nbsp;|&nbsp;
-    <a target="_blank" href="https://docs.stunic.gdut.edu.cn/s/95811be2-7486-456b-a5dd-39df2bc6f472/doc/5qch5zut572r5oql5lu5rig6ygt-wqTC4eXJsq">校园网报修</a>
-</div>
-<script type="text/javascript">setTimeout(function(){initUI()},100);</script>
+        
+        setTimeout(function(){ initUI() }, 100);
+    </script>
 </body>
 </html>

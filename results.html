@@ -1,204 +1,332 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  <title>测速结果 | GDUTNIC 测速网站</title>
-  <meta name="renderer" content="webkit">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <link rel="stylesheet" href="https://lib.baomitu.com/layui/2.5.7/css/layui.css"  media="all">
-  <style type="text/css">
-        @font-face{
-                font-family: 'MyriadPro';
-                src: url('./font/MyriadPro-Regular.otf');
+    <meta charset="utf-8">
+    <title>测速结果 | GDUTNIC 测速网站</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+            margin: 0;
+            background-attachment: fixed;
         }
-        @font-face{
-                font-family: 'MyriadPro';
-                src: url('./font/MyriadPro-Bold.otf');
-                font-weight: bold;
+
+        /* Glassmorphism utilities */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
-        html,body{
-                border:none; padding:0; margin:0;
-                background:#141526;
-                color:#f4f4f5;
+
+        .glass-header {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
-        body{
-                text-align:center;
-                font-family: "MyriadPro","Microsoft YaHei",Helvetica,Arial,sans-serif;
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
         }
-        h1{
-                color:#f4f4f5;
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 4px;
         }
-        a{
-                cursor: pointer;
-                color: #fff;
-                text-decoration: none;
-                outline: 0;
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
         }
-        a:hover{
-                color: #1cbfff;
-                text-decoration: none;
-                cursor: pointer;
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
         }
-        #testWrapper{
-                margin-bottom: 2em;
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        #startStopBtn{
-                display:inline-block;
-                position: relative;
-                margin:0 auto;
-                width:8em; height:3em;
-                line-height:2.7em;
-                cursor:pointer;
-                box-shadow: 0 0 0 rgba(0,0,0,0.1), inset 0 0 0 rgba(0,0,0,0.1);
+        
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
         }
-        .start-border{
-                position: absolute;
-                top: 0;
-                left: 0;
-                width:8em;
-                height:3em;
-                border-radius: 5px;
-                box-sizing: border-box;
-                background-image: linear-gradient(#141526,#141526),linear-gradient(to bottom,#2de5d1,#1fa4e9);
-                background-color: #141526;
-                border: 2px transparent solid;
-                background-origin: border-box;
-                background-clip: content-box,border-box;
+
+        .row-enter {
+            animation: fadeIn 0.3s ease-out forwards;
+            opacity: 0;
         }
-        .start-text{
-                position: absolute;
-                margin:2px;
-                top: 0;
-                left: 0;
-                width:calc(8em - 4px);
-                height:calc(3em - 4px);
-                border-radius: 5px;
-                background-color: #ffffff00;
+
+        /* Speed Glows */
+        .speed-fast {
+            color: #4ade80;
+            text-shadow: 0 0 10px rgba(74, 222, 128, 0.4);
         }
-        .start-text:hover{
-                background-color:#151f2f;
+        .speed-medium {
+            color: #60a5fa;
+            text-shadow: 0 0 10px rgba(96, 165, 250, 0.4);
         }
-        .start-text:before{
-                content:"开始测速";
+        .speed-slow {
+            color: #94a3b8;
         }
-        #startStopBtn.running .start-text:before{
-                content:"终止测速";
+
+        th {
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s;
         }
-        #test{
-                margin-top:2em;
-                margin-bottom:1em;
+        th:hover {
+            background-color: rgba(255, 255, 255, 0.05);
         }
-        div.testArea{
-                display:inline-block;
-                width:16em;
-                height:12.5em;
-                position:relative;
-                box-sizing:border-box;
+        
+        .sort-icon {
+            display: inline-block;
+            width: 0;
+            height: 0;
+            margin-left: 5px;
+            vertical-align: middle;
+            border-right: 4px solid transparent;
+            border-left: 4px solid transparent;
+            opacity: 0.3;
         }
-        div.testArea2{
-                display:inline-block;
-                width:14em;
-                height:7em;
-                position:relative;
-                box-sizing:border-box;
-                text-align:center;
+        .sort-asc .sort-icon {
+            border-bottom: 4px solid #fff;
+            border-top: none;
+            opacity: 1;
         }
-        div.testArea div.testName{
-                position:absolute;
-                top:0.1em; left:0;
-                width:100%;
-                font-size:1.4em;
-                z-index:9;
+        .sort-desc .sort-icon {
+            border-top: 4px solid #fff;
+            border-bottom: none;
+            opacity: 1;
         }
-        div.testArea2 div.testName{
-        display:block;
-        text-align:center;
-        font-size:1.4em;
-        }
-        .meterText{
-                font-family: "MyriadPro",Futura,gauge-mono,"HCo Gotham SSm",Helvetica,Arial,sans-serif;
-        }
-        div.testArea div.meterText{
-                position:absolute;
-                bottom:1.55em; left:0;
-                width:100%;
-                font-size:2.5em;
-                z-index:9;
-        }
-        div.testArea2 div.meterText{
-        display:inline-block;
-        font-size:2.5em;
-        }
-        div.meterText:empty:before{
-                content:"0.00";
-        }
-        div.testArea div.unit{
-                position:absolute;
-                bottom:2em; left:0;
-                width:100%;
-                z-index:9;
-        }
-        div.testArea2 div.unit{
-                display:inline-block;
-        }
-        div.testArea canvas{
-                position:absolute;
-                top:0; left:0; width:100%; height:100%;
-                z-index:1;
-        }
-        div.testGroup{
-                display:block;
-        margin: 0 auto;
-        }
-        @media all and (max-width:40em){
-                body{
-                        font-size:0.8em;
-                }
-        }
-    .footer {line-height: 30px; text-align: center;}
-    .footer a{padding:0 6px; font-weight: 300;}
-    .footer a:hover{color: green;}
-    .header {line-height: 30px; text-align: center;height:50px;padding-top:50px;margin-bottom: 10px;}
-    .header span>a {color:white;}
-  </style>
+    </style>
 </head>
-<body>
-<div class="header">
-  <h1>GDUTNIC 测速网站 测速结果</h1>
-<span class="layui-badge layui-bg-green"><a href="./chart.html" target="_blank">查看线性图表</a></span>
-  <a href="javascript:layer.tips('线性图表用于展示不同运营商在不同时段的速度表现，程序默认保留1000条测速结果，可调大此数值以获得更准确的图表分析', '#tips', {
-  tips: [3, '#3595CC'],
-  time: 6000
-});"><span id="tips" class="layui-badge layui-bg-black">?</span></a>
-</div>
+<body class="p-4 md:p-8">
 
-<table class="layui-hide" id="test"></table>
+    <div class="max-w-7xl mx-auto animate-fade-in">
+        <!-- Header Island -->
+        <div class="glass-panel rounded-2xl p-6 mb-8 flex flex-col md:flex-row justify-between items-center gap-4 relative overflow-hidden">
+            <!-- Decorative glow -->
+            <div class="absolute -top-24 -right-24 w-48 h-48 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+            <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+            
+            <div class="relative z-10">
+                <h1 class="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
+                    GDUTNIC 测速结果
+                </h1>
+                <p class="text-slate-400 text-sm mt-1">网络速度监控仪表盘</p>
+            </div>
+            
+            <div class="flex items-center gap-4 relative z-10">
+                <a href="./chart.html" target="_blank" class="px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-300 flex items-center gap-2 text-sm font-medium group">
+                    <svg class="w-4 h-4 text-blue-400 group-hover:text-blue-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
+                    查看线性图表
+                </a>
+                <div class="group relative">
+                    <button class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition-all duration-300 text-slate-300">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </button>
+                    <div class="absolute right-0 top-12 w-64 p-3 rounded-xl glass-panel text-xs text-slate-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                        线性图表用于展示不同运营商在不同时段的速度表现，程序默认保留1000条测速结果，可调大此数值以获得更准确的图表分析。
+                    </div>
+                </div>
+            </div>
+        </div>
 
-<script src="https://lib.baomitu.com/layui/2.5.7/layui.js" charset="utf-8"></script>
+        <!-- Table Island -->
+        <div class="glass-panel rounded-2xl overflow-hidden flex flex-col">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse whitespace-nowrap">
+                    <thead>
+                        <tr class="glass-header text-xs uppercase tracking-wider text-slate-400">
+                            <th class="px-6 py-4 font-medium" data-sort="ip">IP地址 <span class="sort-icon"></span></th>
+                            <th class="px-6 py-4 font-medium" data-sort="isp">运营商 <span class="sort-icon"></span></th>
+                            <th class="px-6 py-4 font-medium" data-sort="addr">城市 <span class="sort-icon"></span></th>
+                            <th class="px-6 py-4 font-medium text-right" data-sort="dspeed">下载 (Mbps) <span class="sort-icon"></span></th>
+                            <th class="px-6 py-4 font-medium text-right" data-sort="uspeed">上传 (Mbps) <span class="sort-icon"></span></th>
+                            <th class="px-6 py-4 font-medium text-right" data-sort="ping">Ping (ms) <span class="sort-icon"></span></th>
+                            <th class="px-6 py-4 font-medium text-right" data-sort="jitter">抖动 (ms) <span class="sort-icon"></span></th>
+                            <th class="px-6 py-4 font-medium" data-sort="created">测试时间 <span class="sort-icon"></span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body" class="divide-y divide-white/5 text-sm">
+                        <!-- Loading State -->
+                        <tr>
+                            <td colspan="8" class="px-6 py-12 text-center text-slate-400">
+                                <div class="flex flex-col items-center justify-center gap-3">
+                                    <svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <span>加载数据中...</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="glass-header px-6 py-4 flex items-center justify-between border-t border-white/5">
+                <div class="text-sm text-slate-400">
+                    共 <span id="total-count" class="text-white font-medium">0</span> 条记录
+                </div>
+                <div class="flex gap-2">
+                    <button id="prev-page" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm">上一页</button>
+                    <div class="flex items-center px-2 text-sm">
+                        <span id="current-page">1</span> / <span id="total-pages">1</span>
+                    </div>
+                    <button id="next-page" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm">下一页</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<script>
-    layui.use('table', function(){
-        var table = layui.table;
+    <script>
+        let allData = [];
+        let currentSort = { column: 'created', direction: 'desc' };
+        let currentPage = 1;
+        const itemsPerPage = 15;
 
-        table.render({
-            elem: '#test'
-            ,url:'./backend/results-api.php'
-            ,cellMinWidth: 80
-            ,cols: [[
-                {field:'ip', title: 'IP地址'}
-                ,{field:'isp', title: '运营商'}
-                ,{field:'addr', title: '城市'}
-                ,{field:'dspeed', title: '下载速度 (Mbps)', sort: true, align: 'right'}
-                ,{field:'uspeed', title: '上传速度 (Mbps)', sort: true, align: 'right'}
-                ,{field:'ping', title: 'Ping (ms)', sort: true, align: 'right'}
-                ,{field:'jitter', title: '抖动 (ms)', sort: true, align: 'right'}
-                ,{field:'created', title: '测试时间', sort: true}
-            ]]
+        // Fetch data
+        async function fetchData() {
+            try {
+                const response = await fetch('./backend/results-api.php');
+                const result = await response.json();
+                if (result.code === 0 && result.data) {
+                    allData = result.data;
+                    renderTable();
+                } else {
+                    showError('获取数据失败');
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                showError('网络请求错误');
+            }
+        }
+
+        function showError(msg) {
+            document.getElementById('table-body').innerHTML = `
+                <tr>
+                    <td colspan="8" class="px-6 py-12 text-center text-red-400">
+                        ${msg}
+                    </td>
+                </tr>
+            `;
+        }
+
+        function getSpeedClass(speed) {
+            const val = parseFloat(speed);
+            if (isNaN(val)) return 'speed-slow';
+            if (val >= 100) return 'speed-fast';
+            if (val >= 10) return 'speed-medium';
+            return 'speed-slow';
+        }
+
+        function sortData() {
+            const { column, direction } = currentSort;
+            allData.sort((a, b) => {
+                let valA = a[column];
+                let valB = b[column];
+                
+                // Numeric sort for specific columns
+                if (['dspeed', 'uspeed', 'ping', 'jitter'].includes(column)) {
+                    valA = parseFloat(valA) || 0;
+                    valB = parseFloat(valB) || 0;
+                }
+                
+                if (valA < valB) return direction === 'asc' ? -1 : 1;
+                if (valA > valB) return direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+
+        function renderTable() {
+            sortData();
+            
+            const totalPages = Math.ceil(allData.length / itemsPerPage) || 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+            
+            const startIdx = (currentPage - 1) * itemsPerPage;
+            const endIdx = startIdx + itemsPerPage;
+            const pageData = allData.slice(startIdx, endIdx);
+            
+            const tbody = document.getElementById('table-body');
+            
+            if (pageData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-8 text-center text-slate-400">暂无数据</td></tr>`;
+            } else {
+                tbody.innerHTML = pageData.map((row, index) => `
+                    <tr class="hover:bg-white/5 transition-colors row-enter" style="animation-delay: ${index * 0.03}s">
+                        <td class="px-6 py-4 text-slate-300 font-mono text-xs">${row.ip || '-'}</td>
+                        <td class="px-6 py-4 text-slate-200">${row.isp || '-'}</td>
+                        <td class="px-6 py-4 text-slate-400">${row.addr || '-'}</td>
+                        <td class="px-6 py-4 text-right font-medium ${getSpeedClass(row.dspeed)}">${row.dspeed || '0.00'}</td>
+                        <td class="px-6 py-4 text-right font-medium ${getSpeedClass(row.uspeed)}">${row.uspeed || '0.00'}</td>
+                        <td class="px-6 py-4 text-right text-slate-300">${row.ping || '0.00'}</td>
+                        <td class="px-6 py-4 text-right text-slate-400">${row.jitter || '0.00'}</td>
+                        <td class="px-6 py-4 text-slate-400 text-xs">${row.created || '-'}</td>
+                    </tr>
+                `).join('');
+            }
+            
+            // Update pagination UI
+            document.getElementById('total-count').textContent = allData.length;
+            document.getElementById('current-page').textContent = currentPage;
+            document.getElementById('total-pages').textContent = totalPages;
+            
+            document.getElementById('prev-page').disabled = currentPage === 1;
+            document.getElementById('next-page').disabled = currentPage === totalPages;
+            
+            // Update sort icons
+            document.querySelectorAll('th').forEach(th => {
+                th.classList.remove('sort-asc', 'sort-desc');
+                if (th.dataset.sort === currentSort.column) {
+                    th.classList.add(currentSort.direction === 'asc' ? 'sort-asc' : 'sort-desc');
+                }
+            });
+        }
+
+        // Event Listeners
+        document.querySelectorAll('th').forEach(th => {
+            th.addEventListener('click', () => {
+                const column = th.dataset.sort;
+                if (!column) return;
+                
+                if (currentSort.column === column) {
+                    currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    currentSort.column = column;
+                    currentSort.direction = 'desc';
+                }
+                renderTable();
+            });
         });
-    });
-</script>
 
+        document.getElementById('prev-page').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+            }
+        });
+
+        document.getElementById('next-page').addEventListener('click', () => {
+            const totalPages = Math.ceil(allData.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTable();
+            }
+        });
+
+        // Init
+        fetchData();
+    </script>
 </body>
 </html>
-
