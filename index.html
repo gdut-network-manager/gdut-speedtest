@@ -554,7 +554,10 @@
             document.getElementById("ip").textContent = "";
         }
         
-        setTimeout(function(){ initUI() }, 100);
+        setTimeout(function(){
+            initUI();
+            startStop();
+        }, 1200);
     </script>
 </body>
 </html>
