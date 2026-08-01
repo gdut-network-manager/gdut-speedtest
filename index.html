@@ -260,7 +260,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                     下载速度
                 </div>
-                <div class="relative w-full aspect-square max-w-[260px]">
+                <div class="relative w-full aspect-square max-w-[400px]">
                     <canvas id="dlMeter" class="absolute inset-0 w-full h-full"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center mt-6">
                         <span id="dlText" class="font-futura text-5xl font-bold text-slate-800 dark:text-white drop-shadow-sm dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">0.00</span>
@@ -275,7 +275,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                     上传速度
                 </div>
-                <div class="relative w-full aspect-square max-w-[260px]">
+                <div class="relative w-full aspect-square max-w-[400px]">
                     <canvas id="ulMeter" class="absolute inset-0 w-full h-full"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center mt-6">
                         <span id="ulText" class="font-futura text-5xl font-bold text-slate-800 dark:text-white drop-shadow-sm dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">0.00</span>
@@ -471,9 +471,9 @@
             ctx.clearRect(0, 0, cw, ch);
         
             var centerX = cw / 2;
-            var centerY = ch / 2 + (ch * 0.05); // Offset slightly down
+            var centerY = ch / 2 + (ch * 0.03); // Offset slightly down
             var maxBlur = (isDark ? 20 : 10) * dp;
-            var radius = Math.min(cw, ch) / 2.2 - maxBlur * 1.5; // Leave room for shadowBlur
+            var radius = Math.min(cw, ch) / 2.2 - maxBlur; // Large ring with room for glow
             var lineWidth = radius * 0.15;
             
             var startAngle = Math.PI * 0.8;
