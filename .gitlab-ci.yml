@@ -34,12 +34,12 @@ sonarqube-check:
     - develop
 
 docker-build-and-push:
-  image: docker.m.ixdev.cn/library/docker:24-cli
+  image: registry.gdut.edu.cn/docker/library/docker:24-cli
   stage: build-phase-1
   tags:
     - Docker
   services:
-    - name: docker.m.ixdev.cn/library/docker:24-cli
+    - name: registry.gdut.edu.cn/docker/library/docker:24-cli
   before_script:
     - echo "======================== SETUP BUILDX ENVIRONMENT =========================="
     - docker info
