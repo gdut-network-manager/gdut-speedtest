@@ -1,8 +1,8 @@
-<img src='https://cn-gz-1.minio.gdutnic.com/gdutnic/public/sundry/speedtestlogo.png'></img>
+<img src='./logo.png' width='120'></img>
 
 [![pipeline status](https://git.gdutnic.com/gregPerlinLi/gdutnic-speedtest-x/badges/master/pipeline.svg)](https://git.gdutnic.com/gregPerlinLi/gdutnic-speedtest-x/-/commits/master)
 
-# GDUTNIC 测速网站
+# 广东工业大学测速网站
 
 本仓库为 [LibreSpeed](https://github.com/librespeed/speedtest) 的延伸项目，LibreSpeed 是一个非常轻巧的网站测速工具。
 
@@ -95,7 +95,7 @@ speedtest-x 使用文件数据库来保存来自不同用户的测速结果，�
 | `MAX_LOG_COUNT` | `100` | 最大可保存多少条测速记录 |
 | `IP_SERVICE` | `ip.sb` | 使用的 IP 运营商解析服务 |
 | `SAME_IP_MULTI_LOGS` | `false` | 是否允许同一 IP 记录多条测速结果 |
-| `TITLE` | `GDUTNIC 测速网站` | 网站名称 |
+| `TITLE` | `广东工业大学测速网站` | 网站名称 |
 
 > 如果想让 Docker 容器支持 IPv6，可编辑 `/etc/docker/daemon.json`，加上以下内容（如果不存在这个文件则直接创建）：
 >

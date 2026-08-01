@@ -36,9 +36,9 @@ if [ "$SAME_IP_MULTI_LOGS" != "false" ]; then
   sed -i "s/^const SAME_IP_MULTI_LOGS = false/const SAME_IP_MULTI_LOGS = $SAME_IP_MULTI_LOGS/g" /var/www/html/backend/config.php
 fi
 
-if [ "$TITLE" != "GDUTNIC 测速网站" ]; then
-  sed -i "s/GDUTNIC 测速网站/$TITLE/g" /var/www/html/index.html
-  sed -i "s/GDUTNIC 测速网站/$TITLE/g" /var/www/html/results.html
+if [ "$TITLE" != "广东工业大学测速网站" ]; then
+  sed -i "s/广东工业大学测速网站/$TITLE/g" /var/www/html/index.html
+  sed -i "s/广东工业大学测速网站/$TITLE/g" /var/www/html/results.html
 fi
 
 echo "Done, Starting APACHE"

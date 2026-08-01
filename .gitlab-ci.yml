@@ -84,7 +84,7 @@ docker-build-and-push:
           --annotation "index:org.opencontainers.image.revision=${IMAGE_REVISION}" \
           --annotation "index:org.opencontainers.image.vendor=gregPerlinLi" \
           --annotation "index:org.opencontainers.image.licenses=MIT" \
-          --annotation "index:org.opencontainers.image.title=GDUTNIC SpeedTest X" \
+          --annotation "index:org.opencontainers.image.title=广东工业大学测速网站" \
           --annotation "index:org.opencontainers.image.description=本仓库为网管队测速网站项目，为 LibreSpeed 的延伸项目，LibreSpeed 是一个非常轻巧的网站测速工具。" \
           ${HARBORHOST}/gdutnic-speedtest/speedtest-x:${tag}
       done

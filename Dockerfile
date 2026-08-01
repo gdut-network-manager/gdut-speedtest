@@ -50,7 +50,7 @@ ENV WEBPORT=80
 ENV MAX_LOG_COUNT=100
 ENV IP_SERVICE="ip.sb"
 ENV SAME_IP_MULTI_LOGS="false"
-ENV TITLE="GDUTNIC 测速网站"
+ENV TITLE="广东工业大学测速网站"
 
 VOLUME ["/speedlogs"]
 
@@ -69,5 +69,5 @@ LABEL org.opencontainers.image.created="${IMAGE_CREATED}" \
   org.opencontainers.image.revision="${IMAGE_REVISION}" \
   org.opencontainers.image.vendor="gregPerlinLi" \
   org.opencontainers.image.licenses="MIT" \
-  org.opencontainers.image.title="GDUTNIC SpeedTest X" \
+  org.opencontainers.image.title="广东工业大学测速网站" \
   org.opencontainers.image.description="本仓库为网管队测速网站项目，为 LibreSpeed 的延伸项目，LibreSpeed 是一个非常轻巧的网站测速工具。"
