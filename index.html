@@ -83,11 +83,50 @@
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(0, 0, 0, 0.05);
             box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.06);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                        box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
         .dark .glass-panel {
             background: rgba(20, 21, 38, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Card hover lift effect */
+        .glass-panel:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 32px 64px -12px rgba(15, 23, 42, 0.12);
+        }
+        .dark .glass-panel:hover {
+            box-shadow: 0 32px 64px -12px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Mouse spotlight effect */
+        .glass-panel::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: radial-gradient(circle 200px at var(--mouse-x, 50%) var(--mouse-y, 50%),
+                                        rgba(255, 255, 255, 0.12), transparent 70%);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 0;
+        }
+        .dark .glass-panel::after {
+            background: radial-gradient(circle 200px at var(--mouse-x, 50%) var(--mouse-y, 50%),
+                                        rgba(255, 255, 255, 0.08), transparent 70%);
+        }
+        .glass-panel:hover::after {
+            opacity: 1;
+        }
+        /* Ensure content stays above spotlight layer */
+        .glass-panel > * {
+            position: relative;
+            z-index: 1;
         }
         
         /* Glowing CTA */
@@ -250,9 +289,20 @@
             <span class="opacity-20 hidden sm:inline">|</span>
             <a target="_blank" href="https://selfmanager.gdut.edu.cn" class="hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors">自助服务</a>
             <span class="opacity-20 hidden sm:inline">|</span>
-            <a target="_blank" href="https://docs.stunic.gdut.edu.cn/s/95811be2-7486-456b-a5dd-39df2bc6f472" class="hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors">用网教程</a>
+            <a target="_blank" href="http://wechat.dotease.cn:8008/Article/Index" class="hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors">用网教程</a>
             <span class="opacity-20 hidden sm:inline">|</span>
-            <a target="_blank" href="https://docs.stunic.gdut.edu.cn/s/95811be2-7486-456b-a5dd-39df2bc6f472/doc/5qch5zut572r5oql5lu5rig6ygt-wqTC4eXJsq" class="hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors">校园网报修</a>
+            <div class="group relative">
+                <a href="javascript:void(0)" class="hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>
+                    校园网报修
+                </a>
+                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-72 p-4 rounded-2xl glass-panel text-center opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                    <img src="./gdutnic-qrcode.jpeg" alt="广东工业大学网络中心公众号二维码" class="w-48 h-48 mx-auto rounded-xl mb-3 object-contain">
+                    <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">扫码关注<b>广东工业大学网络中心</b>公众号<br>点击「故障报修」→「我要报修」进行报修</p>
+                </div>
+            </div>
+            <span class="opacity-20 hidden sm:inline">|</span>
+            <span id="copyright" class="text-xs text-slate-400 dark:text-slate-500"></span>
         </footer>
     </div>
 
@@ -558,6 +608,20 @@
             initUI();
             startStop();
         }, 1200);
+
+        // Mouse spotlight effect — update CSS variables on hover
+        document.addEventListener("mousemove", function (e) {
+            var el = e.target.closest(".glass-panel");
+            if (!el) return;
+            var rect = el.getBoundingClientRect();
+            var x = (e.clientX - rect.left) / rect.width * 100;
+            var y = (e.clientY - rect.top) / rect.height * 100;
+            el.style.setProperty("--mouse-x", x + "%");
+            el.style.setProperty("--mouse-y", y + "%");
+        });
+
+        // Copyright year
+        document.getElementById("copyright").textContent = "© " + new Date().getFullYear() + " 广东工业大学学生网管队";
     </script>
 </body>
 </html>
