@@ -3,6 +3,9 @@
 <head>
     <meta charset="utf-8">
     <title>测速结果 | 广东工业大学测速网站</title>
+    <link rel="icon" href="logo.png" sizes="32x32" />
+    <link rel="icon" href="logo.png" sizes="192x192" />
+    <link rel="apple-touch-icon-precomposed" href="logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -343,7 +346,7 @@
             </div>
             
             
-            <div class="flex items-center gap-4 relative z-10">
+            <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-4 relative z-10">
                 <!-- Theme Switcher -->
                 <div class="relative flex items-center bg-black/5 dark:bg-black/40 p-1 rounded-full border border-black/10 dark:border-white/10 shadow-inner">
                     <div id="theme-slider" class="absolute h-7 w-16 bg-white dark:bg-white/10 rounded-full shadow-sm transition-transform duration-300 ease-out"></div>
@@ -369,7 +372,8 @@
 
         <!-- Table Island -->
         <div class="glass-panel rounded-2xl overflow-hidden flex flex-col">
-            <div class="overflow-x-auto">
+            <!-- Desktop Table -->
+            <div class="overflow-x-auto hidden md:block">
                 <table class="w-full text-left border-collapse whitespace-nowrap">
                     <thead>
                         <tr class="glass-header text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
@@ -398,6 +402,17 @@
                         </tr>
                     </tbody>
                 </table>
+            </div>
+            
+            <!-- Mobile Cards -->
+            <div id="mobile-cards" class="md:hidden p-4 space-y-3">
+                <div class="flex flex-col items-center justify-center gap-3 py-12 text-slate-500 dark:text-slate-400">
+                    <svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>加载数据中...</span>
+                </div>
             </div>
             
             <!-- Pagination -->
@@ -447,6 +462,7 @@
                     </td>
                 </tr>
             `;
+            document.getElementById('mobile-cards').innerHTML = `<div class="py-12 text-center text-red-500 dark:text-red-400">${msg}</div>`;
         }
 
         function getSpeedClass(speed) {
@@ -486,9 +502,11 @@
             const pageData = allData.slice(startIdx, endIdx);
             
             const tbody = document.getElementById('table-body');
+            const mobileCards = document.getElementById('mobile-cards');
             
             if (pageData.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-8 text-center text-slate-500 dark:text-slate-400">暂无数据</td></tr>`;
+                mobileCards.innerHTML = `<div class="py-8 text-center text-slate-500 dark:text-slate-400">暂无数据</div>`;
             } else {
                 tbody.innerHTML = pageData.map((row, index) => `
                     <tr class="table-row-hover transition-colors row-enter" style="animation-delay: ${index * 0.03}s">
@@ -501,6 +519,40 @@
                         <td class="px-6 py-4 text-right text-slate-500 dark:text-slate-400">${row.jitter || '0.00'}</td>
                         <td class="px-6 py-4 text-slate-500 dark:text-slate-400 text-xs">${row.created || '-'}</td>
                     </tr>
+                `).join('');
+
+                mobileCards.innerHTML = pageData.map((row, index) => `
+                    <div class="rounded-xl border border-table p-4 space-y-3 row-enter" style="animation-delay: ${index * 0.03}s">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="font-mono text-xs text-slate-700 dark:text-slate-300 truncate">${row.ip || '-'}</span>
+                            <span class="text-sm text-slate-800 dark:text-slate-200 shrink-0">${row.isp || '-'}</span>
+                        </div>
+                        <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                            <span class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                ${row.addr || '-'}
+                            </span>
+                            <span>${row.created || '-'}</span>
+                        </div>
+                        <div class="grid grid-cols-4 gap-1 pt-2 border-t border-table">
+                            <div class="text-center">
+                                <div class="text-[10px] text-slate-400 dark:text-slate-500 mb-0.5">下载</div>
+                                <div class="text-sm font-medium ${getSpeedClass(row.dspeed)}">${row.dspeed || '0.00'}</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-[10px] text-slate-400 dark:text-slate-500 mb-0.5">上传</div>
+                                <div class="text-sm font-medium ${getSpeedClass(row.uspeed)}">${row.uspeed || '0.00'}</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-[10px] text-slate-400 dark:text-slate-500 mb-0.5">Ping</div>
+                                <div class="text-sm text-slate-700 dark:text-slate-300">${row.ping || '0.00'}</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-[10px] text-slate-400 dark:text-slate-500 mb-0.5">抖动</div>
+                                <div class="text-sm text-slate-500 dark:text-slate-400">${row.jitter || '0.00'}</div>
+                            </div>
+                        </div>
+                    </div>
                 `).join('');
             }
             
