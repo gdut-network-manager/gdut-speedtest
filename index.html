@@ -147,7 +147,27 @@
             -webkit-text-fill-color: transparent;
             animation: gradient-shift 6s ease infinite;
         }
-        
+
+        /* Intro modal */
+        .intro-modal {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .intro-modal.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .intro-modal-panel {
+            transform: scale(0.95);
+            opacity: 0;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .intro-modal.open .intro-modal-panel {
+            transform: scale(1);
+            opacity: 1;
+        }
+
         /* Glowing CTA */
         .cta-glow {
             box-shadow: 0 0 20px rgba(4, 183, 254, 0.2), inset 0 0 20px rgba(4, 183, 254, 0.05);
@@ -335,7 +355,7 @@
                 测速记录
             </a>
             <span class="opacity-20 hidden sm:inline">|</span>
-            <a target="_blank" href="https://docs.stunic.gdut.edu.cn/s/be177bff-ab91-4d06-a216-4b0a61ee1eaf" class="hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors flex items-center gap-1.5">
+            <a href="javascript:void(0)" id="introLink" class="hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors flex items-center gap-1.5">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 网站介绍
             </a>
@@ -385,7 +405,67 @@
         </footer>
     </div>
 
+    <!-- Intro Modal -->
+    <div id="introModal" class="intro-modal fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div class="intro-modal-backdrop absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div class="intro-modal-panel relative glass-panel rounded-3xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-6 sm:p-8">
+            <button id="introClose" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 flex items-center justify-center transition-colors text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <h2 class="text-2xl font-bold title-gradient mb-6 pr-10">网站介绍</h2>
+            <div class="space-y-6 text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+                <section>
+                    <h3 class="flex items-center gap-2 text-lg font-semibold text-slate-800 dark:text-white mb-2">
+                        <svg class="w-5 h-5 text-cyan-500 dark:text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        网站用途
+                    </h3>
+                    <p>本站是广东工业大学校园网测速工具，基于开源项目 LibreSpeed 构建。通过浏览器下载与上传测试数据，测量您的上下行带宽、网络延迟与抖动，帮助您了解当前校园网连接的实际性能。测速过程无需安装任何客户端软件。</p>
+                </section>
+                <section>
+                    <h3 class="flex items-center gap-2 text-lg font-semibold text-slate-800 dark:text-white mb-2">
+                        <svg class="w-5 h-5 text-cyan-500 dark:text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        隐私说明
+                    </h3>
+                    <p>测速完成后，系统会记录您的 IP 地址、运营商、所在城市及测速结果（下载速度、上传速度、延迟、抖动）。<strong class="text-slate-700 dark:text-slate-200">本站不收集任何个人身份信息</strong>，不使用 Cookie 追踪您的行为，所有数据仅用于展示测速历史统计与运营商速度趋势分析。测速结果在结果页面公开可见。</p>
+                </section>
+                <section>
+                    <h3 class="flex items-center gap-2 text-lg font-semibold text-slate-800 dark:text-white mb-2">
+                        <svg class="w-5 h-5 text-cyan-500 dark:text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        服务说明
+                    </h3>
+                    <p>测速数据保存在服务器端的文件数据库中，默认最多保留 <strong class="text-slate-700 dark:text-slate-200">1000</strong> 条记录，超出后最早记录将被自动覆盖。同一 IP 地址可多次提交测速结果。本站不保证数据存储的持久性，保留记录数量与策略可能根据服务器运营情况调整。测速结果与历史数据在「测速记录」页面公开可见，可按运营商、时间等维度排序浏览。</p>
+                </section>
+            </div>
+        </div>
+    </div>
+
     <script type="text/javascript">
+        // Intro Modal
+        (function() {
+            var modal = document.getElementById('introModal');
+            var link = document.getElementById('introLink');
+            var closeBtn = document.getElementById('introClose');
+            var backdrop = modal.querySelector('.intro-modal-backdrop');
+
+            function openModal() {
+                modal.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            }
+            function closeModal() {
+                modal.classList.remove('open');
+                document.body.style.overflow = '';
+            }
+
+            link.addEventListener('click', openModal);
+            closeBtn.addEventListener('click', closeModal);
+            backdrop.addEventListener('click', closeModal);
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modal.classList.contains('open')) {
+                    closeModal();
+                }
+            });
+        })();
+
         // Theme Switcher Logic
         function setTheme(theme) {
             localStorage.setItem('theme', theme);
