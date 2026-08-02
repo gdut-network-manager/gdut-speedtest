@@ -229,7 +229,7 @@
     <div class="relative z-10 container mx-auto px-4 py-8 min-h-screen flex flex-col items-center justify-center max-w-7xl">
         
         <!-- Header Island -->
-        <header class="glass-panel rounded-3xl p-6 mb-8 w-full flex flex-col sm:flex-row items-center justify-between gap-4">
+        <header class="glass-panel rounded-3xl p-6 mb-8 w-full flex flex-col sm:flex-row items-center justify-between gap-4 overflow-visible">
             <div class="flex items-center gap-3">
                 <img src="logo.png" alt="Logo" class="h-8 w-8 sm:h-10 sm:w-10 object-contain rounded-xl shadow-sm" onerror="this.outerHTML='<svg class=\'h-8 w-8 sm:h-10 sm:w-10 text-cyan-500\' fill=\'currentColor\' viewBox=\'0 0 24 24\'><path d=\'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5\'/></svg>'">
                 <h1 class="text-2xl sm:text-3xl font-bold tracking-wide title-gradient drop-shadow-sm">
@@ -249,11 +249,11 @@
                     <div id="ip-slider" class="absolute h-7 w-14 bg-white dark:bg-white/10 rounded-full shadow-sm transition-transform duration-300 ease-out"></div>
                     <div class="group relative">
                         <a href="https://speed4.gdut.edu.cn" id="btn-ipv4" class="ip-btn relative z-10 w-14 h-7 flex items-center justify-center text-xs font-medium text-slate-600 dark:text-gray-400 transition-colors">IPv4</a>
-                        <div id="tip-ipv4" class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[calc(100vw-2rem)] px-3 py-1.5 rounded-lg glass-panel text-xs text-slate-600 dark:text-slate-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200 z-50 pointer-events-none">当前网络不支持 IPv4</div>
+                        <div id="tip-ipv4" class="hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[calc(100vw-2rem)] px-3 py-1.5 rounded-lg glass-panel text-xs text-slate-600 dark:text-slate-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200 z-50 pointer-events-none">当前网络不支持 IPv4</div>
                     </div>
                     <div class="group relative">
                         <a href="https://speed6.gdut.edu.cn" id="btn-ipv6" class="ip-btn relative z-10 w-14 h-7 flex items-center justify-center text-xs font-medium text-slate-600 dark:text-gray-400 transition-colors">IPv6</a>
-                        <div id="tip-ipv6" class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[calc(100vw-2rem)] px-3 py-1.5 rounded-lg glass-panel text-xs text-slate-600 dark:text-slate-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200 z-50 pointer-events-none">当前网络不支持 IPv6</div>
+                        <div id="tip-ipv6" class="hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[calc(100vw-2rem)] px-3 py-1.5 rounded-lg glass-panel text-xs text-slate-600 dark:text-slate-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200 z-50 pointer-events-none">当前网络不支持 IPv6</div>
                     </div>
                 </div>
             </div>
@@ -496,7 +496,7 @@
                 btn.style.opacity = '0.35';
                 btn.style.pointerEvents = 'none';
                 btn.style.cursor = 'not-allowed';
-                tip.style.display = '';
+                tip.classList.remove('hidden');
             }
 
             function probeProtocol(url) {
