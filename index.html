@@ -264,7 +264,7 @@
             
             <!-- CTA Island -->
             <div class="md:col-span-12 flex justify-center items-center py-4">
-                <button id="startStopBtn" onclick="startStop()" class="relative group w-56 h-16 rounded-full glass-panel border border-cyan-500/30 dark:border-cyan-500/50 cta-glow overflow-hidden flex items-center justify-center">
+                <button id="startStopBtn" onclick="startStop()" class="relative group w-72 h-16 rounded-full glass-panel border border-cyan-500/30 dark:border-cyan-500/50 cta-glow overflow-hidden flex items-center justify-center transition-all duration-300">
                     <div class="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 dark:from-cyan-500/20 dark:to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <span id="startStopText" class="relative z-10 text-xl font-bold tracking-wider text-cyan-600 dark:text-cyan-50 drop-shadow-sm dark:drop-shadow-md">开始测速</span>
                 </button>
@@ -474,12 +474,23 @@
         })();
 
         // IP Protocol Detection
+        var ipDetecting = true;
         (function() {
             var slider = document.getElementById('ip-slider');
             var btn4 = document.getElementById('btn-ipv4');
             var btn6 = document.getElementById('btn-ipv6');
             var tip4 = document.getElementById('tip-ipv4');
             var tip6 = document.getElementById('tip-ipv6');
+            var startBtn = document.getElementById('startStopBtn');
+            var startText = document.getElementById('startStopText');
+
+            startText.textContent = '正在检测当前网络环境';
+
+            [btn4, btn6, slider].forEach(function(el) {
+                el.style.opacity = '0.35';
+                el.style.pointerEvents = 'none';
+                el.style.cursor = 'not-allowed';
+            });
 
             function setActive(version) {
                 [btn4, btn6].forEach(function(btn) {
@@ -499,6 +510,12 @@
                 tip.classList.remove('hidden');
             }
 
+            function enableBtn(btn) {
+                btn.style.opacity = '';
+                btn.style.pointerEvents = '';
+                btn.style.cursor = '';
+            }
+
             function probeProtocol(url) {
                 return fetch(url, {
                     mode: 'no-cors',
@@ -513,24 +530,36 @@
 
             setActive(onIPv6 ? 6 : 4);
 
+            var probes = [];
             if (!onIPv6) {
-                probeProtocol('https://speed6.gdut.edu.cn/backend/empty.php?r=' + Math.random())
-                    .then(function(ok) { if (!ok) disableBtn(btn6, tip6); });
+                probes.push(probeProtocol('https://speed6.gdut.edu.cn/backend/empty.php?r=' + Math.random())
+                    .then(function(ok) { if (!ok) disableBtn(btn6, tip6); }));
             }
             if (!onIPv4) {
-                probeProtocol('https://speed4.gdut.edu.cn/backend/empty.php?r=' + Math.random())
-                    .then(function(ok) { if (!ok) disableBtn(btn4, tip4); });
+                probes.push(probeProtocol('https://speed4.gdut.edu.cn/backend/empty.php?r=' + Math.random())
+                    .then(function(ok) { if (!ok) disableBtn(btn4, tip4); }));
             }
-
             if (!onIPv4 && !onIPv6) {
-                fetch('./backend/getIP.php')
+                probes.push(fetch('./backend/getIP.php')
                     .then(function(r) { return r.json(); })
                     .then(function(data) {
                         var ip = data.processedString ? data.processedString.split(' - ')[0] : '';
                         if (ip.indexOf(':') !== -1) setActive(6);
                     })
-                    .catch(function() {});
+                    .catch(function() {}));
             }
+
+            Promise.all(probes).then(function() {
+                ipDetecting = false;
+                startText.textContent = '开始测速';
+                slider.style.opacity = '';
+                slider.style.pointerEvents = '';
+                slider.style.cursor = '';
+                if (!tip4.classList.contains('hidden')) disableBtn(btn4, tip4);
+                else enableBtn(btn4);
+                if (!tip6.classList.contains('hidden')) disableBtn(btn6, tip6);
+                else enableBtn(btn6);
+            });
         })();
 
         // Theme Switcher Logic
@@ -723,6 +752,7 @@
         // UI CODE
         var uiData = null;
         function startStop(){
+            if(ipDetecting) return;
             var btn = document.getElementById("startStopBtn");
             var text = document.getElementById("startStopText");
             
