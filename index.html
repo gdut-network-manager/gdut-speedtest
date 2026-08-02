@@ -245,9 +245,10 @@
                     <button onclick="setTheme('auto')" id="btn-theme-auto" class="relative z-10 w-16 h-7 flex items-center justify-center text-xs font-medium text-slate-600 dark:text-gray-400 transition-colors">💻 自动</button>
                 </div>
                 
-                <div class="flex gap-2 bg-black/5 dark:bg-black/40 p-1.5 rounded-full border border-black/5 dark:border-white/10 shadow-inner">
-                <a href="https://speed4.gdut.edu.cn" class="px-4 py-1 rounded-full text-sm font-medium text-slate-700 dark:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-colors">IPv4</a>
-                <a href="https://speed6.gdut.edu.cn" class="px-4 py-1 rounded-full text-sm font-medium text-slate-700 dark:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-colors">IPv6</a>
+                <div class="relative flex items-center bg-black/5 dark:bg-black/40 p-1 rounded-full border border-black/5 dark:border-white/10 shadow-inner">
+                    <div id="ip-slider" class="absolute h-7 w-14 bg-white dark:bg-white/10 rounded-full shadow-sm transition-transform duration-300 ease-out"></div>
+                    <a href="https://speed4.gdut.edu.cn" id="btn-ipv4" class="ip-btn relative z-10 w-14 h-7 flex items-center justify-center text-xs font-medium text-slate-600 dark:text-gray-400 transition-colors">IPv4</a>
+                    <a href="https://speed6.gdut.edu.cn" id="btn-ipv6" class="ip-btn relative z-10 w-14 h-7 flex items-center justify-center text-xs font-medium text-slate-600 dark:text-gray-400 transition-colors">IPv6</a>
                 </div>
             </div>
         </header>
@@ -466,6 +467,40 @@
             });
         })();
 
+        // IP Protocol Detection
+        (function() {
+            var slider = document.getElementById('ip-slider');
+            var btn4 = document.getElementById('btn-ipv4');
+            var btn6 = document.getElementById('btn-ipv6');
+
+            function setActive(version) {
+                [btn4, btn6].forEach(function(btn) {
+                    btn.classList.remove('text-cyan-600', 'dark:text-cyan-400');
+                    btn.classList.add('text-slate-600', 'dark:text-gray-400');
+                });
+                var active = version === 6 ? btn6 : btn4;
+                active.classList.remove('text-slate-600', 'dark:text-gray-400');
+                active.classList.add('text-cyan-600', 'dark:text-cyan-400');
+                slider.style.transform = version === 6 ? 'translateX(3.5rem)' : 'translateX(0)';
+            }
+
+            var host = window.location.hostname;
+            if (host.indexOf('speed4') !== -1) {
+                setActive(4);
+            } else if (host.indexOf('speed6') !== -1) {
+                setActive(6);
+            } else {
+                setActive(4);
+                fetch('./backend/getIP.php')
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        var ip = data.processedString ? data.processedString.split(' - ')[0] : '';
+                        if (ip.indexOf(':') !== -1) setActive(6);
+                    })
+                    .catch(function() {});
+            }
+        })();
+
         // Theme Switcher Logic
         function setTheme(theme) {
             localStorage.setItem('theme', theme);
@@ -489,18 +524,22 @@
             const btnAuto = document.getElementById('btn-theme-auto');
             
             if (slider && btnLight && btnDark && btnAuto) {
-                btnLight.classList.remove('text-cyan-600', 'dark:text-cyan-400');
-                btnDark.classList.remove('text-cyan-600', 'dark:text-cyan-400');
-                btnAuto.classList.remove('text-cyan-600', 'dark:text-cyan-400');
+                [btnLight, btnDark, btnAuto].forEach(function(btn) {
+                    btn.classList.remove('text-cyan-600', 'dark:text-cyan-400');
+                    btn.classList.add('text-slate-600', 'dark:text-gray-400');
+                });
                 
                 if (theme === 'light') {
                     slider.style.transform = 'translateX(0)';
+                    btnLight.classList.remove('text-slate-600', 'dark:text-gray-400');
                     btnLight.classList.add('text-cyan-600', 'dark:text-cyan-400');
                 } else if (theme === 'dark') {
-                    slider.style.transform = 'translateX(4rem)'; // 16 * 0.25rem = 4rem
+                    slider.style.transform = 'translateX(4rem)';
+                    btnDark.classList.remove('text-slate-600', 'dark:text-gray-400');
                     btnDark.classList.add('text-cyan-600', 'dark:text-cyan-400');
                 } else {
                     slider.style.transform = 'translateX(8rem)';
+                    btnAuto.classList.remove('text-slate-600', 'dark:text-gray-400');
                     btnAuto.classList.add('text-cyan-600', 'dark:text-cyan-400');
                 }
             }
