@@ -33,6 +33,28 @@ sonarqube-check:
     - main
     - develop
 
+github-mirror:
+  stage: check-phase
+  image: alpine:latest
+  tags:
+    - dev
+  before_script:
+    - apk add --no-cache git
+  script:
+    - |
+      if [ -z "$GITHUB_REPO" ] || [ -z "$GITHUB_TOKEN" ]; then
+        echo "GITHUB_REPO or GITHUB_TOKEN is not set, skipping..."
+        exit 0
+      fi
+    - git remote add github "https://x-access-token:${GITHUB_TOKEN}@${GITHUB_REPO#https://}"
+    - git push github HEAD:${CI_COMMIT_REF_NAME} --force
+  allow_failure: true
+  only:
+    - merge_requests
+    - master
+    - main
+    - develop
+
 docker-build-and-push:
   image: registry.gdut.edu.cn/docker/library/docker:24-cli
   stage: build-phase-1
