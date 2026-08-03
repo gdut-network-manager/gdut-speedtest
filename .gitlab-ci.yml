@@ -40,6 +40,7 @@ github-mirror:
     - dev
   before_script:
     - apk add --no-cache git
+    - git config --global --add safe.directory "${CI_PROJECT_DIR}"
   script:
     - |
       if [ -z "$GITHUB_REPO" ] || [ -z "$GITHUB_TOKEN" ]; then
