@@ -39,6 +39,8 @@ github-mirror:
   tags:
     - dev
   before_script:
+    - sed -i 's#https\?://dl-cdn.alpinelinux.org/alpine#https://mirrors.cernet.edu.cn/alpine#g' /etc/apk/repositories
+    - apk update
     - apk add --no-cache git
     - git config --global --add safe.directory "${CI_PROJECT_DIR}"
   script:
