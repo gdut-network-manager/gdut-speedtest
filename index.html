@@ -256,8 +256,8 @@
             <div class="md:col-span-4 flex flex-col gap-6">
                 <div class="glass-panel rounded-3xl p-6 flex-1 flex flex-col justify-center items-center relative overflow-hidden group">
                     <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50 group-hover:opacity-100 transition-opacity"></div>
-                    <div class="text-slate-500 dark:text-gray-400 text-sm font-medium mb-2 uppercase tracking-widest flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <div class="text-slate-500 dark:text-gray-400 text-base font-medium mb-2 uppercase tracking-widest flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         平均延迟
                     </div>
                     <div class="flex items-baseline gap-2">
@@ -267,8 +267,8 @@
                 </div>
                 <div class="glass-panel rounded-3xl p-6 flex-1 flex flex-col justify-center items-center relative overflow-hidden group">
                     <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-50 group-hover:opacity-100 transition-opacity"></div>
-                    <div class="text-slate-500 dark:text-gray-400 text-sm font-medium mb-2 uppercase tracking-widest flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    <div class="text-slate-500 dark:text-gray-400 text-base font-medium mb-2 uppercase tracking-widest flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                         抖动
                     </div>
                     <div class="flex items-baseline gap-2">
@@ -280,8 +280,8 @@
 
             <!-- Download Gauge Island -->
             <div class="md:col-span-4 glass-panel rounded-3xl p-6 flex flex-col items-center justify-center relative">
-                <div class="text-slate-500 dark:text-gray-400 text-sm font-medium mb-2 uppercase tracking-widest flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                <div class="text-slate-500 dark:text-gray-400 text-base font-medium mb-2 uppercase tracking-widest flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                     下载速度
                 </div>
                 <div class="relative w-full aspect-square max-w-[400px]">
@@ -295,8 +295,8 @@
 
             <!-- Upload Gauge Island -->
             <div class="md:col-span-4 glass-panel rounded-3xl p-6 flex flex-col items-center justify-center relative">
-                <div class="text-slate-500 dark:text-gray-400 text-sm font-medium mb-2 uppercase tracking-widest flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                <div class="text-slate-500 dark:text-gray-400 text-base font-medium mb-2 uppercase tracking-widest flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                     上传速度
                 </div>
                 <div class="relative w-full aspect-square max-w-[400px]">
@@ -625,7 +625,7 @@
         }
         
         // CODE FOR GAUGES
-        function drawMeter(c, targetAmount, bk, colorBegin, colorEnd, isDl, progress) {
+        function drawMeter(c, targetAmount, bk, colorBegin, colorEnd, isDl) {
             var ctx = c.getContext("2d");
             var dp = window.devicePixelRatio || 1;
             var cw = c.clientWidth * dp;
@@ -635,7 +635,6 @@
             var isDark = document.documentElement.classList.contains('dark');
             var currentBk = isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)";
             var innerCoreColor = isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.2)";
-            var progBkColor = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
             
             if (c.width !== cw || c.height !== ch) {
                 c.width = cw;
@@ -700,29 +699,6 @@
                 ctx.arc(centerX, centerY, radius, startAngle, currentEndAngle);
                 ctx.stroke();
             }
-
-            // Draw progress bar at the bottom
-            if (typeof progress !== "undefined" && progress > 0) {
-                var progY = ch * 0.95;
-                var progStartX = cw * 0.3;
-                var progWidth = cw * 0.4;
-                
-                ctx.beginPath();
-                ctx.strokeStyle = progBkColor;
-                ctx.lineWidth = lineWidth * 0.4;
-                ctx.lineCap = "round";
-                ctx.moveTo(progStartX, progY);
-                ctx.lineTo(progStartX + progWidth, progY);
-                ctx.stroke();
-        
-                ctx.beginPath();
-                ctx.strokeStyle = colorBegin;
-                ctx.lineWidth = lineWidth * 0.4;
-                ctx.lineCap = "round";
-                ctx.moveTo(progStartX, progY);
-                ctx.lineTo(progStartX + (progWidth * progress), progY);
-                ctx.stroke();
-            }
         }
         
         function mbpsToAmount(s){
@@ -736,9 +712,82 @@
             if(d<100) return d.toFixed(1);
             return d.toFixed(0);
         }
+
+        function drawSparkline(c, history, startTime, liveValue, colorBegin, colorEnd){
+            if(history.length < 1 || startTime === 0) return;
+            var ctx = c.getContext("2d");
+            var dp = window.devicePixelRatio || 1;
+            var cw = c.width;
+            var ch = c.height;
+
+            // Sparkline area: bottom 15% of canvas, centered 40% width (same as old progress bar)
+            var sparkX = cw * 0.3;
+            var sparkW = cw * 0.4;
+            var sparkY = ch * 0.83;
+            var sparkH = ch * 0.12;
+
+            var now = Date.now();
+
+            // Build display array: history points + a live point during active test
+            var display = history.slice();
+            var isLive = liveValue >= 0;
+            if(isLive && now > display[display.length-1].t) {
+                display.push({t: now, v: liveValue});
+            }
+
+            // X axis range: actual test duration, min 5s
+            var lastT = display[display.length - 1].t;
+            var xRange = Math.max(lastT - startTime, 5000);
+
+            // Linear Y axis — auto-scale to max value with 10% headroom
+            var maxVal = 0;
+            for(var i = 0; i < display.length; i++){
+                if(display[i].v > maxVal) maxVal = display[i].v;
+            }
+            if(maxVal <= 0) maxVal = 1;
+            var yScale = sparkH / (maxVal * 1.1);
+
+            // Build points: x from elapsed time, y from speed
+            var pts = [];
+            for(var i = 0; i < display.length; i++){
+                var t = display[i].t - startTime;
+                if(t < 0) continue;
+                var x = sparkX + (t / xRange) * sparkW;
+                var y = sparkY + sparkH - display[i].v * yScale;
+                pts.push({x: x, y: y});
+            }
+            if(pts.length < 2) return;
+
+            // Bright gradient stroke with glow
+            var strokeGrad = ctx.createLinearGradient(sparkX, 0, sparkX + sparkW, 0);
+            strokeGrad.addColorStop(0, colorBegin);
+            strokeGrad.addColorStop(1, colorEnd);
+
+            ctx.beginPath();
+            ctx.moveTo(pts[0].x, pts[0].y);
+            for(var i = 1; i < pts.length; i++){
+                var cpx = (pts[i-1].x + pts[i].x) / 2;
+                ctx.quadraticCurveTo(pts[i-1].x, pts[i-1].y, cpx, (pts[i-1].y + pts[i].y) / 2);
+            }
+            ctx.lineTo(pts[pts.length-1].x, pts[pts.length-1].y);
+            ctx.strokeStyle = strokeGrad;
+            ctx.lineWidth = 1.5 * dp;
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
+            ctx.shadowColor = colorBegin;
+            ctx.shadowBlur = 4 * dp;
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
         
         // UI CODE
         var uiData = null;
+        var dlHistory = [];
+        var ulHistory = [];
+        var lastDlSample = 0;
+        var lastUlSample = 0;
+        var dlStartTime = 0;
+        var ulStartTime = 0;
         function startStop(){
             if(ipDetecting) return;
             var btn = document.getElementById("startStopBtn");
@@ -757,6 +806,7 @@
                 initUI();
             } else {
                 // test is not running, begin
+                initUI();
                 btn.classList.add("cta-running");
                 btn.classList.remove("border-cyan-500/30", "dark:border-cyan-500/50");
                 btn.classList.add("border-purple-500/30", "dark:border-purple-500/50");
@@ -797,6 +847,19 @@
             
             var ulVal = (status == 3 && uiData.ulStatus == 0) ? "..." : format(uiData.ulStatus);
             document.getElementById("ulText").textContent = ulVal;
+
+            // Sample speed history every 200ms with timestamp
+            var now = Date.now();
+            if (status == 1 && uiData.dlStatus > 0 && now - lastDlSample >= 200) {
+                if(dlStartTime === 0) dlStartTime = now;
+                dlHistory.push({t: now, v: Number(uiData.dlStatus)});
+                lastDlSample = now;
+            }
+            if (status == 3 && uiData.ulStatus > 0 && now - lastUlSample >= 200) {
+                if(ulStartTime === 0) ulStartTime = now;
+                ulHistory.push({t: now, v: Number(uiData.ulStatus)});
+                lastUlSample = now;
+            }
             
             document.getElementById("pingText").textContent = format(uiData.pingStatus);
             document.getElementById("jitText").textContent = format(uiData.jitterStatus);
@@ -837,13 +900,19 @@
             var status = uiData ? uiData.testState : 0;
             var dlTarget = (uiData && status >= 1) ? mbpsToAmount(Number(uiData.dlStatus*(status==1?oscillate():1))) : 0;
             var ulTarget = (uiData && status >= 3) ? mbpsToAmount(Number(uiData.ulStatus*(status==3?oscillate():1))) : 0;
-            
-            var dlProg = uiData ? Number(uiData.dlProgress) : 0;
-            var ulProg = uiData ? Number(uiData.ulProgress) : 0;
-        
-            drawMeter(document.getElementById("dlMeter"), dlTarget, null, dlColorBegin, dlColorEnd, true, dlProg);
-            drawMeter(document.getElementById("ulMeter"), ulTarget, null, ulColorBegin, ulColorEnd, false, ulProg);
-            
+
+            var dlLive = (uiData && status == 1) ? Number(uiData.dlStatus) : -1;
+            var ulLive = (uiData && status == 3) ? Number(uiData.ulStatus) : -1;
+
+            var dlCanvas = document.getElementById("dlMeter");
+            var ulCanvas = document.getElementById("ulMeter");
+
+            drawMeter(dlCanvas, dlTarget, null, dlColorBegin, dlColorEnd, true);
+            drawMeter(ulCanvas, ulTarget, null, ulColorBegin, ulColorEnd, false);
+
+            drawSparkline(dlCanvas, dlHistory, dlStartTime, dlLive, dlColorBegin, dlColorEnd);
+            drawSparkline(ulCanvas, ulHistory, ulStartTime, ulLive, ulColorBegin, ulColorEnd);
+
             updateUI();
         }
         frame(); // start frame loop
@@ -851,6 +920,12 @@
         function initUI(){
             currentDlAmount = 0;
             currentUlAmount = 0;
+            dlHistory = [];
+            ulHistory = [];
+            lastDlSample = 0;
+            lastUlSample = 0;
+            dlStartTime = 0;
+            ulStartTime = 0;
             document.getElementById("dlText").textContent = "0.00";
             document.getElementById("ulText").textContent = "0.00";
             document.getElementById("pingText").textContent = "0";
