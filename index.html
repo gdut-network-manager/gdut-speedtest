@@ -678,7 +678,7 @@
         
                 var currentEndAngle = startAngle + (totalAngle * amount);
         
-                // Draw Glow
+                // Draw Glow (Safari bug: shadowBlur breaks lineCap="round", so stroke twice)
                 ctx.beginPath();
                 ctx.strokeStyle = g;
                 ctx.lineWidth = lineWidth;
@@ -687,9 +687,15 @@
                 ctx.shadowColor = colorBegin;
                 ctx.arc(centerX, centerY, radius, startAngle, currentEndAngle);
                 ctx.stroke();
-                
-                // Reset shadow for next draws
+
+                // Second pass without shadow to restore rounded caps (Safari fix)
                 ctx.shadowBlur = 0;
+                ctx.beginPath();
+                ctx.strokeStyle = g;
+                ctx.lineWidth = lineWidth;
+                ctx.lineCap = "round";
+                ctx.arc(centerX, centerY, radius, startAngle, currentEndAngle);
+                ctx.stroke();
                 
                 // Draw inner bright core
                 ctx.beginPath();
