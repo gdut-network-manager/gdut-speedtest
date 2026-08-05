@@ -67,6 +67,6 @@ LABEL org.opencontainers.image.created="${IMAGE_CREATED}" \
   org.opencontainers.image.version="${IMAGE_VERSION}" \
   org.opencontainers.image.revision="${IMAGE_REVISION}" \
   org.opencontainers.image.vendor="gregPerlinLi" \
-  org.opencontainers.image.licenses="MIT" \
+  org.opencontainers.image.licenses="LGPL-2.1" \
   org.opencontainers.image.title="广东工业大学测速网站" \
   org.opencontainers.image.description="本仓库为网管队测速网站项目，为 LibreSpeed 的延伸项目，LibreSpeed 是一个非常轻巧的网站测速工具。"
