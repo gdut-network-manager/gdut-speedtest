@@ -149,4 +149,4 @@ gdutnic-speedtest-x/
 
 ## 许可证
 
-LGPL-2.1 license
+LGPL-3.0 License
