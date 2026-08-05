@@ -87,10 +87,10 @@
         /* Glassmorphism utilities */
         .glass-panel {
             background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.06);
             transition: background 0.3s ease, border-color 0.3s ease,
                         transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
                         box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -104,7 +104,7 @@
         /* Card hover lift effect */
         .glass-panel:hover {
             transform: translateY(-4px);
-            box-shadow: 0 32px 64px -12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 32px 64px -12px rgba(15, 23, 42, 0.12);
         }
         .dark .glass-panel:hover {
             box-shadow: 0 32px 64px -12px rgba(0, 0, 0, 0.6);
@@ -341,7 +341,7 @@
 
     <div class="relative z-10 max-w-7xl mx-auto animate-fade-in">
         <!-- Header Island -->
-        <div class="glass-panel rounded-2xl p-6 mb-8 flex flex-col md:flex-row justify-between items-center gap-4 relative overflow-visible z-20">
+        <div class="glass-panel rounded-3xl p-6 mb-8 flex flex-col md:flex-row justify-between items-center gap-4 relative overflow-visible z-20">
             <!-- Decorative glow -->
             <div class="absolute -top-24 -right-24 w-48 h-48 blob-1 rounded-full mix-blend-multiply filter blur-3xl"></div>
             <div class="absolute -bottom-24 -left-24 w-48 h-48 blob-2 rounded-full mix-blend-multiply filter blur-3xl"></div>
@@ -379,20 +379,20 @@
         </div>
 
         <!-- Table Island -->
-        <div class="glass-panel rounded-2xl overflow-hidden flex flex-col">
+        <div class="glass-panel rounded-3xl overflow-hidden flex flex-col">
             <!-- Desktop Table -->
             <div class="overflow-x-auto hidden md:block">
                 <table class="w-full text-left border-collapse whitespace-nowrap">
                     <thead>
                         <tr class="glass-header text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                            <th class="px-6 py-4 font-medium" data-sort="ip"><div class="flex items-center gap-2"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 9.75a3 3 0 015.5 2.25c0 1.5-1.5 2.25-3 2.25s-3 .75-3 2.25a3 3 0 005.5 2.25"></path></svg>IP地址</div> <span class="sort-icon"></span></th>
-                            <th class="px-6 py-4 font-medium" data-sort="isp"><div class="flex items-center gap-2"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"></path></svg>运营商</div> <span class="sort-icon"></span></th>
-                            <th class="px-6 py-4 font-medium" data-sort="addr"><div class="flex items-center gap-2"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>城市</div> <span class="sort-icon"></span></th>
-                            <th class="px-6 py-4 font-medium text-right" data-sort="dspeed"><div class="flex items-center justify-end gap-2">下载 (Mbps)<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg></div> <span class="sort-icon"></span></th>
-                            <th class="px-6 py-4 font-medium text-right" data-sort="uspeed"><div class="flex items-center justify-end gap-2">上传 (Mbps)<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg></div> <span class="sort-icon"></span></th>
-                            <th class="px-6 py-4 font-medium text-right" data-sort="ping"><div class="flex items-center justify-end gap-2">Ping (ms)<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div> <span class="sort-icon"></span></th>
-                            <th class="px-6 py-4 font-medium text-right" data-sort="jitter"><div class="flex items-center justify-end gap-2">抖动 (ms)<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></div> <span class="sort-icon"></span></th>
-                            <th class="px-6 py-4 font-medium" data-sort="created"><div class="flex items-center gap-2"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>测试时间</div> <span class="sort-icon"></span></th>
+                            <th class="px-6 py-4 font-medium" data-sort="ip"><div class="flex items-center gap-2"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 9.75a3 3 0 015.5 2.25c0 1.5-1.5 2.25-3 2.25s-3 .75-3 2.25a3 3 0 005.5 2.25"></path></svg>IP地址<span class="sort-icon"></span></div></th>
+                            <th class="px-6 py-4 font-medium" data-sort="isp"><div class="flex items-center gap-2"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"></path></svg>运营商<span class="sort-icon"></span></div></th>
+                            <th class="px-6 py-4 font-medium" data-sort="addr"><div class="flex items-center gap-2"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>城市<span class="sort-icon"></span></div></th>
+                            <th class="px-6 py-4 font-medium text-right" data-sort="dspeed"><div class="flex items-center justify-end gap-2">下载 (Mbps)<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg><span class="sort-icon"></span></div></th>
+                            <th class="px-6 py-4 font-medium text-right" data-sort="uspeed"><div class="flex items-center justify-end gap-2">上传 (Mbps)<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg><span class="sort-icon"></span></div></th>
+                            <th class="px-6 py-4 font-medium text-right" data-sort="ping"><div class="flex items-center justify-end gap-2">Ping (ms)<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="sort-icon"></span></div></th>
+                            <th class="px-6 py-4 font-medium text-right" data-sort="jitter"><div class="flex items-center justify-end gap-2">抖动 (ms)<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg><span class="sort-icon"></span></div></th>
+                            <th class="px-6 py-4 font-medium" data-sort="created"><div class="flex items-center gap-2"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>测试时间<span class="sort-icon"></span></div></th>
                         </tr>
                     </thead>
                     <tbody id="table-body" class="divide-y divide-table text-sm">
@@ -429,11 +429,11 @@
                     共 <span id="total-count" class="text-slate-900 dark:text-white font-medium">0</span> 条记录
                 </div>
                 <div class="flex gap-2">
-                    <button id="prev-page" class="px-3 py-1.5 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm">上一页</button>
+                    <button id="prev-page" class="px-3 py-1.5 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm">上一页</button>
                     <div class="flex items-center px-2 text-sm">
                         <span id="current-page">1</span> / <span id="total-pages">1</span>
                     </div>
-                    <button id="next-page" class="px-3 py-1.5 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm">下一页</button>
+                    <button id="next-page" class="px-3 py-1.5 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm">下一页</button>
                 </div>
             </div>
         </div>
@@ -441,7 +441,7 @@
 
     <script>
         let allData = [];
-        let currentSort = { column: 'created', direction: 'desc' };
+        let currentSort = { column: 'dspeed', direction: 'desc' };
         let currentPage = 1;
         const itemsPerPage = 15;
 

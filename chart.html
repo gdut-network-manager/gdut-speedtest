@@ -62,10 +62,10 @@
 
         .glass-panel {
             background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.06);
             transition: background 0.3s ease, border-color 0.3s ease,
                         transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
                         box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -79,7 +79,7 @@
         /* Card hover lift effect */
         .glass-panel:hover {
             transform: translateY(-4px);
-            box-shadow: 0 32px 64px -12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 32px 64px -12px rgba(15, 23, 42, 0.12);
         }
         .dark .glass-panel:hover {
             box-shadow: 0 32px 64px -12px rgba(0, 0, 0, 0.6);
@@ -109,6 +109,10 @@
         .glass-panel > * {
             position: relative;
             z-index: 1;
+        }
+        /* Allow hover popups to escape parent stacking context */
+        .glass-panel > .group.relative {
+            z-index: 50;
         }
 
         @keyframes fadeIn {
@@ -241,7 +245,7 @@
 
     <div class="relative z-10 max-w-7xl mx-auto animate-fade-in">
         <!-- Header Island -->
-        <div class="glass-panel rounded-2xl p-6 mb-8 flex flex-col md:flex-row justify-between items-center gap-4 relative overflow-hidden">
+        <div class="glass-panel rounded-3xl p-6 mb-8 flex flex-col md:flex-row justify-between items-center gap-4 relative overflow-hidden">
             <div class="absolute -top-24 -right-24 w-48 h-48 blob-1 rounded-full mix-blend-multiply filter blur-3xl"></div>
             <div class="absolute -bottom-24 -left-24 w-48 h-48 blob-2 rounded-full mix-blend-multiply filter blur-3xl"></div>
             
@@ -271,7 +275,7 @@
         </div>
 
         <!-- Chart Island -->
-        <div class="glass-panel rounded-2xl p-4 md:p-6 relative overflow-hidden">
+        <div class="glass-panel rounded-3xl p-4 md:p-6 relative overflow-hidden">
             <div class="chart-container">
                 <canvas id="canvas"></canvas>
             </div>
