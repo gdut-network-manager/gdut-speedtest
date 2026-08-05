@@ -37,3 +37,33 @@ Single-context layout: root `CONTEXT.md` + `docs/adr/`. See `docs/agents/domain.
 - 特别注意 `absolute` / `fixed` 定位的弹出层，它们虽然脱离文档流但仍受 `overflow: hidden` 的视觉裁切
 
 此规范适用于 `index.html`、`results.html`、`chart.html` 及所有未来新增的前端页面。
+
+## Git 提交规范
+
+### 提交时机（强制）
+
+每次完成代码修改（无论是修复 bug、新增功能、还是样式调整）后，**必须**立即 `git commit`。
+
+- 修改后先验证（LSP 诊断 / Playwright / 构建检查），验证通过后立即提交
+- 提交信息使用简体中文，简要说明改动内容
+- **不要推送到远端**（`git push`）——除非用户明确要求推送
+- 用户说"推送"、"推上去"、"push"等词语时才执行 `git push origin master`
+- 只 stage 与当前修改相关的文件（`git add <具体文件>` 或确认无误后 `git add -A`），不要提交无关文件
+
+### 提交信息格式
+
+```
+<简短标题，说明改了什么>
+
+<可选的详情列表>
+```
+
+示例：
+```
+统一三页卡片风格+修复排序图标换行+默认按下载速度降序
+
+- glass-panel backdrop-filter blur(16px)→blur(20px)
+- 主卡片 rounded-2xl→rounded-3xl
+- 排序图标移入 flex div 修复换行
+- 默认排序 created desc → dspeed desc
+```
