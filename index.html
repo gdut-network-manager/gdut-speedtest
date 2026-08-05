@@ -9,6 +9,9 @@
     <link rel="icon" href="logo.png" sizes="192x192" />
     <link rel="apple-touch-icon-precomposed" href="logo.png" />
     <meta name="msapplication-TileImage" content="logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
@@ -32,8 +35,8 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        myriad: ['MyriadPro', 'sans-serif'],
-                        futura: ['Futura LT', 'sans-serif'],
+                        sans: ['Inter', '-apple-system', 'PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'PingFang SC', 'Microsoft YaHei', 'monospace'],
                     },
                     colors: {
                         glass: 'rgba(255, 255, 255, 0.03)',
@@ -44,27 +47,6 @@
         }
     </script>
     <style>
-        @font-face {
-            font-family: 'MyriadPro';
-            src: url('./font/MyriadPro-Regular.otf') format('opentype');
-            font-weight: normal;
-        }
-        @font-face {
-            font-family: 'MyriadPro';
-            src: url('./font/MyriadPro-Bold.otf') format('opentype');
-            font-weight: bold;
-        }
-        @font-face {
-            font-family: 'Futura LT';
-            src: url('./font/Futura LT Book.ttf') format('truetype');
-            font-weight: normal;
-        }
-        @font-face {
-            font-family: 'Futura LT';
-            src: url('./font/Futura LT Bold.ttf') format('truetype');
-            font-weight: bold;
-        }
-        
         /* Grid background */
         .bg-grid {
             background-size: 40px 40px;
@@ -216,7 +198,7 @@
     </style>
     <script type="text/javascript" src="speedtest.js"></script>
 </head>
-<body class="bg-[#f1f5f9] dark:bg-[#0a0a0f] text-slate-800 dark:text-white font-myriad min-h-screen overflow-x-hidden relative selection:bg-cyan-500/30 transition-colors duration-300">
+<body class="bg-[#f1f5f9] dark:bg-[#0a0a0f] text-slate-800 dark:text-white font-sans min-h-screen overflow-x-hidden relative selection:bg-cyan-500/30 transition-colors duration-300">
 
     <!-- Ambient Background -->
     <div class="fixed inset-0 z-0 pointer-events-none">
@@ -279,7 +261,7 @@
                         平均延迟
                     </div>
                     <div class="flex items-baseline gap-2">
-                        <span id="pingText" class="font-futura text-5xl font-bold text-slate-800 dark:text-white drop-shadow-sm dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">0</span>
+                        <span id="pingText" class="font-mono text-5xl font-bold text-slate-800 dark:text-white drop-shadow-sm dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">0</span>
                         <span class="text-cyan-500 dark:text-cyan-400 font-medium">ms</span>
                     </div>
                 </div>
@@ -290,7 +272,7 @@
                         抖动
                     </div>
                     <div class="flex items-baseline gap-2">
-                        <span id="jitText" class="font-futura text-5xl font-bold text-slate-800 dark:text-white drop-shadow-sm dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">0</span>
+                        <span id="jitText" class="font-mono text-5xl font-bold text-slate-800 dark:text-white drop-shadow-sm dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">0</span>
                         <span class="text-purple-500 dark:text-purple-400 font-medium">ms</span>
                     </div>
                 </div>
@@ -305,7 +287,7 @@
                 <div class="relative w-full aspect-square max-w-[400px]">
                     <canvas id="dlMeter" class="absolute inset-0 w-full h-full"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center mt-6">
-                        <span id="dlText" class="font-futura text-5xl font-bold text-slate-800 dark:text-white drop-shadow-sm dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">0.00</span>
+                        <span id="dlText" class="font-mono text-5xl font-bold text-slate-800 dark:text-white drop-shadow-sm dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">0.00</span>
                         <span class="text-cyan-500 dark:text-cyan-400 font-medium mt-1">Mbps</span>
                     </div>
                 </div>
@@ -320,7 +302,7 @@
                 <div class="relative w-full aspect-square max-w-[400px]">
                     <canvas id="ulMeter" class="absolute inset-0 w-full h-full"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center mt-6">
-                        <span id="ulText" class="font-futura text-5xl font-bold text-slate-800 dark:text-white drop-shadow-sm dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">0.00</span>
+                        <span id="ulText" class="font-mono text-5xl font-bold text-slate-800 dark:text-white drop-shadow-sm dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">0.00</span>
                         <span class="text-purple-500 dark:text-purple-400 font-medium mt-1">Mbps</span>
                     </div>
                 </div>
