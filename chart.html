@@ -24,8 +24,7 @@
             }
         }
     </script>
-    <script src="chartjs/Chart.min.js"></script>
-    <script src="chartjs/utils.js"></script>
+    <script src="echarts/echarts.min.js"></script>
     <style>
 
         :root {
@@ -204,7 +203,7 @@
             }
 
             // Update chart if it exists
-            if (window.myScatter) {
+            if (chartInstance) {
                 updateChartTheme(isDark);
             }
         }
@@ -276,262 +275,327 @@
 
         <!-- Chart Island -->
         <div class="glass-panel rounded-3xl p-4 md:p-6 relative overflow-hidden">
+            <!-- Speed Mode Toggle -->
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                    <span id="speed-mode-label">下载速度</span>
+                </div>
+                <div class="relative flex items-center bg-black/5 dark:bg-black/40 p-1 rounded-full border border-black/10 dark:border-white/10">
+                    <div id="speed-slider" class="absolute h-7 w-16 bg-white dark:bg-white/10 rounded-full shadow-sm transition-transform duration-300 ease-out" style="transform: translateX(0)"></div>
+                    <button id="btn-mode-dl" onclick="switchMode('dl')" class="relative z-10 w-16 h-7 flex items-center justify-center text-xs font-medium text-cyan-600 dark:text-cyan-400 transition-colors">下载</button>
+                    <button id="btn-mode-ul" onclick="switchMode('ul')" class="relative z-10 w-16 h-7 flex items-center justify-center text-xs font-medium text-slate-600 dark:text-gray-400 transition-colors">上传</button>
+                </div>
+            </div>
             <div class="chart-container">
-                <canvas id="canvas"></canvas>
+                <div id="canvas" style="width: 100%; height: 100%;"></div>
             </div>
         </div>
     </div>
 
     <script>
-        async function mainfunc() {
-            var color = Chart.helpers.color;
-            var datareq = await fetch('backend/results-api.php');
-            var dataraw = await datareq.text();
-            
-            try {
-                dataraw = JSON.parse(dataraw);
-            } catch {
-                alert("Can't get data");
-                return 0;
+        var ISP_COLORS = [
+            { primary: '#22d3ee', secondary: '#0891b2' },
+            { primary: '#a78bfa', secondary: '#7c3aed' },
+            { primary: '#34d399', secondary: '#059669' },
+            { primary: '#f472b6', secondary: '#db2777' },
+            { primary: '#fbbf24', secondary: '#d97706' },
+            { primary: '#60a5fa', secondary: '#2563eb' },
+            { primary: '#f87171', secondary: '#dc2626' },
+            { primary: '#c084fc', secondary: '#9333ea' }
+        ];
+
+        var rawAllData = [];
+        var chartInstance = null;
+        var currentMode = 'dl';
+        var currentIspOrder = [];
+
+        function buildDatasets(mode) {
+            var data_sorted = {};
+            for (var i = 0; i < rawAllData.length; i++) {
+                var d = rawAllData[i];
+                var parts = d.isp ? d.isp.split(' ') : ['未知'];
+                var ispName = parts.length > 1 ? parts[0] + ' ' + parts[1] : parts[0];
+                if (!data_sorted[ispName]) data_sorted[ispName] = [];
+                data_sorted[ispName].push(d);
             }
 
-            let data_sorted = {};
-            for (const data of dataraw["data"]) {
-                let data_isp = data["isp"].split(" ").length > 1 ? data["isp"].split(" ")[0] + " " + data["isp"].split(" ")[1] : data["isp"];
-                if (data_isp in data_sorted) {
-                    data_sorted[data_isp] = data_sorted[data_isp].concat([data])
-                } else {
-                    data_sorted[data_isp] = [data]
+            var ispKeys = Object.keys(data_sorted);
+            ispKeys.sort(function(a, b) { return data_sorted[b].length - data_sorted[a].length; });
+            currentIspOrder = ispKeys;
+
+            var datasets = [];
+            for (var i = 0; i < ispKeys.length; i++) {
+                var isp = ispKeys[i];
+                var points = data_sorted[isp];
+                var colorIdx = i % ISP_COLORS.length;
+                var c = ISP_COLORS[colorIdx];
+                var data = [];
+                for (var j = 0; j < points.length; j++) {
+                    var p = points[j];
+                    var timeParts = p.created.split(' ')[1].split(':');
+                    var x = parseFloat(timeParts[0]) + parseFloat(timeParts[1]) / 60 + parseFloat(timeParts[2]) / 3600;
+                    var y = parseFloat(mode === 'dl' ? p.dspeed : p.uspeed) || 0;
+                    data.push({ value: [x, y], rawData: p });
                 }
-            }
-            
-            let datasets = []
-            for (const isp of Object.keys(data_sorted)) {
-                let ispdata_chart = {
-                    label: isp,
-                    data: []
-                }
-                for (const ispdata of data_sorted[isp]) {
-                    let [t_h, t_m, t_s] = ispdata["created"].split(" ")[1].split(":");
-                    ispdata_chart["data"] = ispdata_chart["data"].concat([{
-                        x: t_h * 1.0 + t_m / 60 + t_s / 3600,
-                        y: ispdata["dspeed"],
-                        label: ispdata
-                    }]);
-                }
-                datasets = datasets.concat([ispdata_chart])
-            }
-            
-            datasets = datasets.sort((a, b) => a["data"].length < b["data"].length ? 1 : -1);
-            
-            // Modern glowing colors
-            const modernColors = [
-                { border: '#4ade80', bg: 'rgba(74, 222, 128, 0.2)' }, // Green
-                { border: '#60a5fa', bg: 'rgba(96, 165, 250, 0.2)' }, // Blue
-                { border: '#c084fc', bg: 'rgba(192, 132, 252, 0.2)' }, // Purple
-                { border: '#f472b6', bg: 'rgba(244, 114, 182, 0.2)' }, // Pink
-                { border: '#fbbf24', bg: 'rgba(251, 191, 36, 0.2)' }   // Yellow
-            ];
 
-            for (const [i, data] of datasets.entries()) {
-                if (i < modernColors.length) {
-                    datasets[i]["borderColor"] = modernColors[i].border;
-                    datasets[i]["backgroundColor"] = modernColors[i].bg;
-                    datasets[i]["pointBackgroundColor"] = modernColors[i].border;
-                    datasets[i]["pointBorderColor"] = 'rgba(255,255,255,0.8)';
-                    datasets[i]["pointBorderWidth"] = 1;
-                    datasets[i]["pointRadius"] = 4;
-                    datasets[i]["pointHoverRadius"] = 6;
-                } else {
-                    datasets[i]["borderColor"] = 'rgba(148, 163, 184, 0.5)';
-                    datasets[i]["backgroundColor"] = 'rgba(148, 163, 184, 0.1)';
-                    datasets[i]["pointBackgroundColor"] = 'rgba(148, 163, 184, 0.5)';
-                    datasets[i]["pointRadius"] = 3;
-                }
-            }
-
-            let scatterChartData = {
-                datasets: datasets
-            }
-
-            Chart.defaults.global.defaultFontColor = '#94a3b8';
-            Chart.defaults.global.defaultFontFamily = "'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif";
-
-            var ctx = document.getElementById('canvas').getContext('2d');
-            window.myScatter = Chart.Scatter(ctx, {
-                data: scatterChartData,
-                options: {
-                    title: {
-                        display: false
-                    },
-                    legend: {
-                        labels: {
-                            fontColor: '#cbd5e1',
-                            usePointStyle: true,
-                            padding: 20
-                        }
-                    },
-                    tooltips: {
-                        mode: 'nearest',
-                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                        titleFontColor: '#f8fafc',
-                        bodyFontColor: '#cbd5e1',
-                        footerFontColor: '#94a3b8',
-                        borderColor: 'rgba(255,255,255,0.1)',
-                        borderWidth: 1,
-                        cornerRadius: 8,
-                        padding: 12,
-                        callbacks: {
-                            title: function(TooltipItem, data){  
-                                return data["datasets"][TooltipItem[0]["datasetIndex"]]["label"]
-                            },
-                            label: function(TooltipItem, data){
-                                return data["datasets"][TooltipItem["datasetIndex"]]["data"][TooltipItem["index"]]["label"]["isp"];
-                            }, 
-                            footer: function(TooltipItem, data){
-                                let displaydata = data["datasets"][TooltipItem[0]["datasetIndex"]]["data"][TooltipItem[0]["index"]]["label"]; 
-                                let showdict = { 
-                                    "Location": displaydata["addr"],
-                                    "Download": displaydata["dspeed"] + " Mbps",
-                                    "Upload": displaydata["uspeed"] + " Mbps",
-                                    "Ping": displaydata["ping"] + " ms",
-                                    "Jitter": displaydata["jitter"] + " ms",
-                                    "IP": displaydata["ip"],
-                                    "Time": displaydata["created"]
-                                };
-                                let showtext = "";
-                                for (const k of Object.keys(showdict)){
-                                    showtext += k + ": " + showdict[k] + "\n";
-                                }
-                                return showtext;
-                            }
+                datasets.push({
+                    name: isp,
+                    type: 'scatter',
+                    data: data,
+                    symbolSize: 8,
+                    itemStyle: {
+                        color: {
+                            type: 'radial',
+                            x: 0.5, y: 0.5, r: 0.5,
+                            colorStops: [
+                                { offset: 0, color: c.primary },
+                                { offset: 1, color: c.primary + '20' }
+                            ]
                         },
-                        footerFontStyle: 'normal'
+                        shadowBlur: 8,
+                        shadowColor: c.primary + '80'
                     },
-                    scales: {
-                        yAxes: [{
-                            type: 'linear',
-                            position: 'bottom',
-                            gridLines: {
-                                color: 'rgba(255, 255, 255, 0.05)',
-                                zeroLineColor: 'rgba(255, 255, 255, 0.1)'
-                            },
-                            ticks: {
-                                fontColor: '#64748b',
-                                userCallback: function(tick) {
-                                    return tick.toString() + ' Mbps';
-                                }
-                            },
-                            scaleLabel: {
-                                labelString: 'Download Speed',
-                                display: true,
-                                fontColor: '#94a3b8'
-                            }
-                        }],
-                        xAxes: [{
-                            type: 'linear',
-                            gridLines: {
-                                color: 'rgba(255, 255, 255, 0.05)',
-                                zeroLineColor: 'rgba(255, 255, 255, 0.1)'
-                            },
-                            ticks: {
-                                fontColor: '#64748b',
-                                userCallback: function(tick) {
-                                    return tick.toString() + ':00';
-                                },
-                                beginAtZero: true,
-                                stepSize: 3,
-                                max: 24
-                            },
-                            scaleLabel: {
-                                labelString: 'Time of Day (Hours)',
-                                display: true,
-                                fontColor: '#94a3b8'
-                            }
-                        }]
-                    },
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-            
-            const isDark = document.documentElement.classList.contains("dark");
-            updateChartTheme(isDark);
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 16,
+                            shadowColor: c.primary
+                        },
+                        scale: 1.4
+                    }
+                });
+            }
+            return datasets;
         }
 
-        
-        
-        function updateChartTheme(isDark) {
-            if (!window.myScatter) return;
-            
-            const textColor = isDark ? '#cbd5e1' : '#475569';
-            const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
-            const zeroLineColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-            const tooltipBg = isDark ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.9)';
-            const tooltipTitle = isDark ? '#f8fafc' : '#0f172a';
-            const tooltipBody = isDark ? '#cbd5e1' : '#334155';
-            const tooltipFooter = isDark ? '#94a3b8' : '#64748b';
-            const tooltipBorder = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
-            
-            Chart.defaults.global.defaultFontColor = isDark ? '#94a3b8' : '#64748b';
-            
-            window.myScatter.options.legend.labels.fontColor = textColor;
-            
-            window.myScatter.options.scales.xAxes[0].gridLines.color = gridColor;
-            window.myScatter.options.scales.xAxes[0].gridLines.zeroLineColor = zeroLineColor;
-            window.myScatter.options.scales.xAxes[0].ticks.fontColor = textColor;
-            window.myScatter.options.scales.xAxes[0].scaleLabel.fontColor = isDark ? '#94a3b8' : '#64748b';
-            
-            window.myScatter.options.scales.yAxes[0].gridLines.color = gridColor;
-            window.myScatter.options.scales.yAxes[0].gridLines.zeroLineColor = zeroLineColor;
-            window.myScatter.options.scales.yAxes[0].ticks.fontColor = textColor;
-            window.myScatter.options.scales.yAxes[0].scaleLabel.fontColor = isDark ? '#94a3b8' : '#64748b';
-            
-            window.myScatter.options.tooltips.backgroundColor = tooltipBg;
-            window.myScatter.options.tooltips.titleFontColor = tooltipTitle;
-            window.myScatter.options.tooltips.bodyFontColor = tooltipBody;
-            window.myScatter.options.tooltips.footerFontColor = tooltipFooter;
-            window.myScatter.options.tooltips.borderColor = tooltipBorder;
-            
-            // Update dataset colors
-            const darkColors = [
-                { border: '#4ade80', bg: 'rgba(74, 222, 128, 0.2)' }, // Green
-                { border: '#60a5fa', bg: 'rgba(96, 165, 250, 0.2)' }, // Blue
-                { border: '#c084fc', bg: 'rgba(192, 132, 252, 0.2)' }, // Purple
-                { border: '#f472b6', bg: 'rgba(244, 114, 182, 0.2)' }, // Pink
-                { border: '#fbbf24', bg: 'rgba(251, 191, 36, 0.2)' }   // Yellow
+        function getTooltipHtml(params) {
+            var d = params.data.rawData;
+            var colorIdx = currentIspOrder.indexOf(params.seriesName);
+            var c = ISP_COLORS[colorIdx % ISP_COLORS.length];
+            var fields = [
+                { label: '运营商', value: d.isp || '-' },
+                { label: 'IP 地址', value: d.ip || '-' },
+                { label: '城市', value: d.addr || '-' },
+                { label: '下载', value: (d.dspeed || '0.00') + ' Mbps' },
+                { label: '上传', value: (d.uspeed || '0.00') + ' Mbps' },
+                { label: 'Ping', value: (d.ping || '0.00') + ' ms' },
+                { label: '抖动', value: (d.jitter || '0.00') + ' ms' },
+                { label: '时间', value: d.created || '-' }
             ];
-            
-            const lightColors = [
-                { border: '#16a34a', bg: 'rgba(22, 163, 74, 0.2)' }, // Darker Green
-                { border: '#2563eb', bg: 'rgba(37, 99, 235, 0.2)' }, // Darker Blue
-                { border: '#9333ea', bg: 'rgba(147, 51, 234, 0.2)' }, // Darker Purple
-                { border: '#db2777', bg: 'rgba(219, 39, 119, 0.2)' }, // Darker Pink
-                { border: '#d97706', bg: 'rgba(217, 119, 6, 0.2)' }   // Darker Yellow
-            ];
-            
-            const colors = isDark ? darkColors : lightColors;
-            
-            window.myScatter.data.datasets.forEach((dataset, i) => {
-                if (i < colors.length) {
-                    dataset.borderColor = colors[i].border;
-                    dataset.backgroundColor = colors[i].bg;
-                    dataset.pointBackgroundColor = colors[i].border;
-                    dataset.pointBorderColor = isDark ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,1)';
-                } else {
-                    dataset.borderColor = isDark ? 'rgba(148, 163, 184, 0.5)' : 'rgba(100, 116, 139, 0.5)';
-                    dataset.backgroundColor = isDark ? 'rgba(148, 163, 184, 0.1)' : 'rgba(100, 116, 139, 0.1)';
-                    dataset.pointBackgroundColor = isDark ? 'rgba(148, 163, 184, 0.5)' : 'rgba(100, 116, 139, 0.5)';
+
+            var html = '<div style="border-left:3px solid ' + c.primary + ';padding-left:10px;">';
+            for (var i = 0; i < fields.length; i++) {
+                var f = fields[i];
+                var isNumeric = ['下载', '上传', 'Ping', '抖动'].indexOf(f.label) !== -1;
+                var valueStyle = isNumeric
+                    ? 'font-family:JetBrains Mono,monospace;color:#f1f5f9;font-weight:600'
+                    : 'color:#cbd5e1';
+                html += '<div style="display:flex;justify-content:space-between;gap:16px;line-height:1.6;">'
+                    + '<span style="color:#94a3b8;font-size:12px;">' + f.label + '</span>'
+                    + '<span style="' + valueStyle + ';font-size:12px;">' + f.value + '</span>'
+                    + '</div>';
+            }
+            html += '</div>';
+            return html;
+        }
+
+        function getBaseOption(isDark) {
+            var axisLabelColor = isDark ? '#94a3b8' : '#64748b';
+            var axisLineColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+            var splitLineColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+            var tooltipBg = isDark ? 'rgba(15,23,42,0.85)' : 'rgba(255,255,255,0.85)';
+            var tooltipBorder = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
+
+            var yLabel = currentMode === 'dl' ? '下载速度 (Mbps)' : '上传速度 (Mbps)';
+
+            return {
+                backgroundColor: 'transparent',
+                tooltip: {
+                    trigger: 'item',
+                    backgroundColor: tooltipBg,
+                    borderColor: tooltipBorder,
+                    borderWidth: 1,
+                    padding: [8, 12],
+                    borderRadius: 12,
+                    extraCssText: 'backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 8px 32px rgba(0,0,0,0.2);',
+                    formatter: getTooltipHtml
+                },
+                legend: {
+                    show: true,
+                    top: 0,
+                    textStyle: { color: axisLabelColor, fontSize: 12, fontFamily: 'Inter, sans-serif' },
+                    icon: 'circle',
+                    itemWidth: 10,
+                    itemHeight: 10,
+                    itemGap: 16
+                },
+                grid: {
+                    top: 40,
+                    bottom: 70,
+                    left: 60,
+                    right: 30,
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'value',
+                    min: 0,
+                    max: 24,
+                    interval: 3,
+                    axisLine: { lineStyle: { color: axisLineColor } },
+                    axisTick: { show: false },
+                    axisLabel: {
+                        color: axisLabelColor,
+                        formatter: function(val) {
+                            var h = Math.floor(val);
+                            return (h < 10 ? '0' : '') + h + ':00';
+                        }
+                    },
+                    splitLine: { lineStyle: { color: splitLineColor, type: 'dashed' } }
+                },
+                yAxis: {
+                    type: 'value',
+                    name: yLabel,
+                    nameTextStyle: { color: axisLabelColor, fontSize: 12, padding: [0, 0, 8, 0] },
+                    axisLine: { lineStyle: { color: axisLineColor } },
+                    axisTick: { show: false },
+                    axisLabel: {
+                        color: axisLabelColor,
+                        formatter: '{value}'
+                    },
+                    splitLine: { lineStyle: { color: splitLineColor, type: 'dashed' } }
+                },
+                dataZoom: [
+                    {
+                        type: 'slider',
+                        xAxisIndex: 0,
+                        bottom: 10,
+                        height: 22,
+                        start: 0,
+                        end: 100,
+                        borderColor: 'transparent',
+                        backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
+                        fillerColor: isDark ? 'rgba(34,211,238,0.1)' : 'rgba(6,182,212,0.08)',
+                        handleStyle: { color: isDark ? '#22d3ee' : '#0891b2', borderColor: 'transparent' },
+                        textStyle: { color: axisLabelColor, fontSize: 10 },
+                        dataBackground: {
+                            lineStyle: { color: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' },
+                            areaStyle: { color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }
+                        }
+                    },
+                    {
+                        type: 'inside',
+                        xAxisIndex: 0,
+                        start: 0,
+                        end: 100
+                    }
+                ],
+                animation: true,
+                animationDuration: 800,
+                animationEasing: 'cubicOut'
+            };
+        }
+
+        function renderChart() {
+            var isDark = document.documentElement.classList.contains('dark');
+            var datasets = buildDatasets(currentMode);
+            var option = getBaseOption(isDark);
+            option.series = datasets;
+
+            if (!chartInstance) {
+                var container = document.getElementById('canvas');
+                chartInstance = echarts.init(container);
+            }
+            chartInstance.setOption(option, true);
+        }
+
+        function switchMode(mode) {
+            if (mode === currentMode) return;
+            currentMode = mode;
+            var slider = document.getElementById('speed-slider');
+            var btnDl = document.getElementById('btn-mode-dl');
+            var btnUl = document.getElementById('btn-mode-ul');
+            var label = document.getElementById('speed-mode-label');
+
+            if (mode === 'dl') {
+                slider.style.transform = 'translateX(0)';
+                btnDl.classList.remove('text-slate-600', 'dark:text-gray-400');
+                btnDl.classList.add('text-cyan-600', 'dark:text-cyan-400');
+                btnUl.classList.remove('text-cyan-600', 'dark:text-cyan-400');
+                btnUl.classList.add('text-slate-600', 'dark:text-gray-400');
+                label.textContent = '下载速度';
+            } else {
+                slider.style.transform = 'translateX(4rem)';
+                btnUl.classList.remove('text-slate-600', 'dark:text-gray-400');
+                btnUl.classList.add('text-cyan-600', 'dark:text-cyan-400');
+                btnDl.classList.remove('text-cyan-600', 'dark:text-cyan-400');
+                btnDl.classList.add('text-slate-600', 'dark:text-gray-400');
+                label.textContent = '上传速度';
+            }
+
+            renderChart();
+        }
+
+        function showEmpty(message) {
+            if (!chartInstance) return;
+            chartInstance.setOption({
+                title: {
+                    text: message,
+                    left: 'center',
+                    top: 'center',
+                    textStyle: {
+                        color: document.documentElement.classList.contains('dark') ? '#94a3b8' : '#64748b',
+                        fontSize: 16,
+                        fontWeight: 'normal',
+                        fontFamily: 'Inter, sans-serif'
+                    }
                 }
             });
-            
-            window.myScatter.update();
+        }
+
+        async function mainfunc() {
+            var container = document.getElementById('canvas');
+            chartInstance = echarts.init(container);
+            chartInstance.showLoading('default', {
+                text: '加载中...',
+                color: '#22d3ee',
+                textColor: document.documentElement.classList.contains('dark') ? '#94a3b8' : '#64748b',
+                maskColor: document.documentElement.classList.contains('dark') ? 'rgba(10,10,15,0.6)' : 'rgba(255,255,255,0.6)',
+                fontSize: 14,
+                fontFamily: 'Inter, sans-serif'
+            });
+
+            try {
+                var datareq = await fetch('backend/results-api.php');
+                var dataraw = await datareq.json();
+                if (dataraw.code !== 0 || !dataraw.data || dataraw.data.length === 0) {
+                    chartInstance.hideLoading();
+                    showEmpty('暂无测速数据');
+                    return;
+                }
+                rawAllData = dataraw.data;
+                chartInstance.hideLoading();
+                renderChart();
+            } catch (e) {
+                chartInstance.hideLoading();
+                showEmpty('数据加载失败');
+            }
+        }
+
+        function updateChartTheme(isDark) {
+            if (!chartInstance) return;
+            var option = getBaseOption(isDark);
+            option.series = buildDatasets(currentMode);
+            chartInstance.setOption(option, true);
         }
 
 
         window.onload = function() {
             mainfunc();
         };
+
+        window.addEventListener('resize', function() {
+            if (chartInstance) chartInstance.resize();
+        });
 
         // Mouse spotlight effect — update CSS variables on hover
         document.addEventListener("mousemove", function (e) {
