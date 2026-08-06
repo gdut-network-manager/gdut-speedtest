@@ -704,6 +704,10 @@
                 detailMap.remove();
                 detailMap = null;
             }
+
+            var url = new URL(window.location.href);
+            url.searchParams.delete('id');
+            history.replaceState(null, '', url);
         }
 
         function renderDetailContent(r) {
