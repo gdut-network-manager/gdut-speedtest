@@ -7,5 +7,23 @@
     "ulURL": "empty.php",
     "pingURL": "empty.php",
     "getIpURL": "getIP.php"
+  },
+  {
+    "id": 2,
+    "name": "广东工业大学测速网站 (IPv4)",
+    "server": "https://speed4.gdut.edu.cn",
+    "dlURL": "garbage.php",
+    "ulURL": "empty.php",
+    "pingURL": "empty.php",
+    "getIpURL": "getIP.php"
+  },
+  {
+    "id": 3,
+    "name": "广东工业大学测速网站 (IPv6)",
+    "server": "https://speed6.gdut.edu.cn",
+    "dlURL": "garbage.php",
+    "ulURL": "empty.php",
+    "pingURL": "empty.php",
+    "getIpURL": "getIP.php"
   }
 ]
