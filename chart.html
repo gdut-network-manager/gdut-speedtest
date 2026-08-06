@@ -354,6 +354,7 @@
                     var timeParts = p.created.split(' ')[1].split(':');
                     var x = parseFloat(timeParts[0]) + parseFloat(timeParts[1]) / 60 + parseFloat(timeParts[2]) / 3600;
                     var y = parseFloat(mode === 'dl' ? p.dspeed : p.uspeed) || 0;
+                    if (y <= 0) continue; // 对数轴不支持 0 值，跳过无效数据
                     data.push({ value: [x, y], rawData: p });
                 }
 
@@ -464,14 +465,19 @@
                     splitLine: { lineStyle: { color: splitLineColor, type: 'dashed' } }
                 },
                 yAxis: {
-                    type: 'value',
+                    type: 'log',
                     name: yLabel,
                     nameTextStyle: { color: axisLabelColor, fontSize: 12, padding: [0, 0, 8, 0] },
                     axisLine: { lineStyle: { color: axisLineColor } },
                     axisTick: { show: false },
                     axisLabel: {
                         color: axisLabelColor,
-                        formatter: '{value}'
+                        formatter: function(val) {
+                            if (val >= 1000) return Math.round(val);
+                            if (val >= 10) return Math.round(val);
+                            if (val >= 1) return val.toFixed(0);
+                            return val.toString();
+                        }
                     },
                     splitLine: { lineStyle: { color: splitLineColor, type: 'dashed' } }
                 },
