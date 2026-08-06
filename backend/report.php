@@ -34,23 +34,16 @@ if ($isCliRequest) {
     $isp = isset($parts[1]) ? trim($parts[1]) : 'Unknown';
     $addr = isset($parts[2]) ? trim($parts[2]) : '';
 
-    // Extract lat/lon from rawIspInfo inside ispinfo JSON
-    $rawIspInfo = is_array($ispInfo) && isset($ispInfo['rawIspInfo']) ? $ispInfo['rawIspInfo'] : null;
+    // CLI's IPInfoResponse struct only has ipinfo.io fields (no lat/lon),
+    // so lat/lon are stripped during JSON round-trip. Query ip-api.com directly.
     $lat = '';
     $lon = '';
-    if (is_array($rawIspInfo)) {
-        if (isset($rawIspInfo['latitude'])) {           // ip.sb
-            $lat = $rawIspInfo['latitude'];
-            $lon = $rawIspInfo['longitude'];
-        } elseif (isset($rawIspInfo['lat'])) {           // ip-api.com
-            $lat = $rawIspInfo['lat'];
-            $lon = $rawIspInfo['lon'];
-        } elseif (!empty($rawIspInfo['loc'])) {          // ipinfo.io
-            $locParts = explode(',', $rawIspInfo['loc']);
-            if (count($locParts) === 2) {
-                $lat = $locParts[0];
-                $lon = $locParts[1];
-            }
+    if (!empty($ip) && filter_var($ip, FILTER_VALIDATE_IP)) {
+        $geoJson = @file_get_contents('http://ip-api.com/json/' . $ip . '?fields=lat,lon');
+        $geoData = json_decode($geoJson, true);
+        if (is_array($geoData) && isset($geoData['lat']) && isset($geoData['lon'])) {
+            $lat = $geoData['lat'];
+            $lon = $geoData['lon'];
         }
     }
 
