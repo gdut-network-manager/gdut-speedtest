@@ -466,6 +466,9 @@
                 },
                 yAxis: {
                     type: 'log',
+                    logBase: 10,
+                    min: 1,
+                    max: 20000,
                     name: yLabel,
                     nameTextStyle: { color: axisLabelColor, fontSize: 12, padding: [0, 0, 8, 0] },
                     axisLine: { lineStyle: { color: axisLineColor } },
@@ -473,13 +476,15 @@
                     axisLabel: {
                         color: axisLabelColor,
                         formatter: function(val) {
-                            if (val >= 1000) return Math.round(val);
-                            if (val >= 10) return Math.round(val);
+                            if (val >= 1000) return (val / 1000).toFixed(val >= 10000 ? 0 : 1).replace(/\.0$/, '') + 'k';
+                            if (val >= 10) return String(Math.round(val));
                             if (val >= 1) return val.toFixed(0);
-                            return val.toString();
+                            return '';
                         }
                     },
-                    splitLine: { lineStyle: { color: splitLineColor, type: 'dashed' } }
+                    splitLine: { lineStyle: { color: splitLineColor, type: 'dashed' } },
+                    minorTick: { show: true, splitNumber: 5, length: 3, lineStyle: { color: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' } },
+                    minorSplitLine: { show: true, lineStyle: { color: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', type: 'dotted' } }
                 },
                 dataZoom: [
                     {
