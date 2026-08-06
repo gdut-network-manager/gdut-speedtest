@@ -1,0 +1,11 @@
+[
+  {
+    "id": 1,
+    "name": "广东工业大学测速网站",
+    "server": "https://speed.gdut.edu.cn",
+    "dlURL": "garbage.php",
+    "ulURL": "empty.php",
+    "pingURL": "empty.php",
+    "getIpURL": "getIP.php"
+  }
+]

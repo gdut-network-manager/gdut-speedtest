@@ -1,0 +1,6 @@
+{
+  "telemetryLevel": "full",
+  "server": "https://speed.gdut.edu.cn",
+  "path": "/backend/report.php",
+  "shareURL": "/results.html"
+}

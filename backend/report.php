@@ -21,18 +21,43 @@ $store = \SleekDB\SleekDB::store('speedlogs', './',[
     'timeout' => 120
 ]);
 
-$reportData = [
-    "key" => sha1(filter_var($_POST['key'], FILTER_SANITIZE_STRING)),
-    #"ip" => maskLastSegment(filter_var($_POST['ip'], FILTER_SANITIZE_STRING)),
-    "ip" => filter_var($_POST['ip'], FILTER_SANITIZE_STRING),
-    "isp" => filter_var($_POST['isp'], FILTER_SANITIZE_STRING),
-    "addr" => filter_var($_POST['addr'], FILTER_SANITIZE_STRING),
-    "dspeed" => (double) filter_var($_POST['dspeed'], FILTER_SANITIZE_STRING),
-    "uspeed" => (double) filter_var($_POST['uspeed'], FILTER_SANITIZE_STRING),
-    "ping" => (double) filter_var($_POST['ping'], FILTER_SANITIZE_STRING),
-    "jitter" => (double) filter_var($_POST['jitter'], FILTER_SANITIZE_STRING),
-    "created" => date('Y-m-d H:i:s', time()),
-];
+// LibreSpeed CLI sends ispinfo/dl/ul instead of ip/isp/addr/dspeed/uspeed
+$isCliRequest = isset($_POST['ispinfo']) && !isset($_POST['dspeed']);
+
+if ($isCliRequest) {
+    $ispInfo = json_decode($_POST['ispinfo'], true);
+    $processedString = is_array($ispInfo) && isset($ispInfo['processedString']) ? $ispInfo['processedString'] : '';
+
+    // processedString format: "IP - ISP - Country,Region,City"
+    $parts = explode(' - ', $processedString, 3);
+    $ip = isset($parts[0]) ? trim($parts[0]) : '';
+    $isp = isset($parts[1]) ? trim($parts[1]) : 'Unknown';
+    $addr = isset($parts[2]) ? trim($parts[2]) : '';
+
+    $reportData = [
+        'key' => sha1($ip),
+        'ip' => $ip,
+        'isp' => $isp,
+        'addr' => $addr,
+        'dspeed' => (double) (isset($_POST['dl']) ? $_POST['dl'] : 0),
+        'uspeed' => (double) (isset($_POST['ul']) ? $_POST['ul'] : 0),
+        'ping' => (double) (isset($_POST['ping']) ? $_POST['ping'] : 0),
+        'jitter' => (double) (isset($_POST['jitter']) ? $_POST['jitter'] : 0),
+        'created' => date('Y-m-d H:i:s', time()),
+    ];
+} else {
+    $reportData = [
+        "key" => sha1(filter_var($_POST['key'], FILTER_SANITIZE_STRING)),
+        "ip" => filter_var($_POST['ip'], FILTER_SANITIZE_STRING),
+        "isp" => filter_var($_POST['isp'], FILTER_SANITIZE_STRING),
+        "addr" => filter_var($_POST['addr'], FILTER_SANITIZE_STRING),
+        "dspeed" => (double) filter_var($_POST['dspeed'], FILTER_SANITIZE_STRING),
+        "uspeed" => (double) filter_var($_POST['uspeed'], FILTER_SANITIZE_STRING),
+        "ping" => (double) filter_var($_POST['ping'], FILTER_SANITIZE_STRING),
+        "jitter" => (double) filter_var($_POST['jitter'], FILTER_SANITIZE_STRING),
+        "created" => date('Y-m-d H:i:s', time()),
+    ];
+}
 
 if (empty($reportData['ip'])) exit;
 
@@ -42,8 +67,11 @@ if (SAME_IP_MULTI_LOGS) {
     $oldLog = $store->where('ip', '=', $reportData['ip'])->orderBy( 'desc', '_id' )->fetch();
 }
 
+$recordId = 0;
+
 if (is_array($oldLog) && empty($oldLog)) {
      $results = $store->insert($reportData);
+     $recordId = $results['_id'];
      if ($results['_id'] > MAX_LOG_COUNT) {
          $store->where('_id', '=', $results['_id'] - MAX_LOG_COUNT)->delete();
      }
@@ -58,4 +86,10 @@ if (is_array($oldLog) && empty($oldLog)) {
         unset($reportData['ip']);
         $store->where('_id', '=', $id)->update($reportData);
     }
+    $recordId = $id;
+}
+
+// LibreSpeed CLI expects "id <number>" response for share link
+if ($isCliRequest) {
+    echo 'id ' . $recordId;
 }
