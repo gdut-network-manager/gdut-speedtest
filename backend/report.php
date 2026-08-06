@@ -58,6 +58,7 @@ if ($isCliRequest) {
         'jitter' => (double) (isset($_POST['jitter']) ? $_POST['jitter'] : 0),
         'lat' => $lat,
         'lon' => $lon,
+        'client_type' => 'cli',
         'created' => date('Y-m-d H:i:s', time()),
     ];
 } else {
@@ -72,6 +73,7 @@ if ($isCliRequest) {
         "jitter" => (double) filter_var($_POST['jitter'], FILTER_SANITIZE_STRING),
         "lat" => isset($_POST['lat']) ? $_POST['lat'] : '',
         "lon" => isset($_POST['lon']) ? $_POST['lon'] : '',
+        "client_type" => 'web',
         "created" => date('Y-m-d H:i:s', time()),
     ];
 }
