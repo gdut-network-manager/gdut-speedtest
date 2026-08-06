@@ -35,15 +35,29 @@ if ($isCliRequest) {
     $addr = isset($parts[2]) ? trim($parts[2]) : '';
 
     // CLI's IPInfoResponse struct only has ipinfo.io fields (no lat/lon),
-    // so lat/lon are stripped during JSON round-trip. Query ip-api.com directly.
+    // so lat/lon are stripped during JSON round-trip. Query IP service directly.
     $lat = '';
     $lon = '';
     if (!empty($ip) && filter_var($ip, FILTER_VALIDATE_IP)) {
-        $geoJson = @file_get_contents('http://ip-api.com/json/' . $ip . '?fields=lat,lon');
-        $geoData = json_decode($geoJson, true);
-        if (is_array($geoData) && isset($geoData['lat']) && isset($geoData['lon'])) {
-            $lat = $geoData['lat'];
-            $lon = $geoData['lon'];
+        $geoJson = '';
+        if (IP_SERVICE === 'ipinfo.io') {
+            $token = defined('IPINFO_APIKEY') && IPINFO_APIKEY ? '?token=' . IPINFO_APIKEY : '';
+            $geoJson = @file_get_contents('https://ipinfo.io/' . $ip . '/json' . $token);
+            $geoData = json_decode($geoJson, true);
+            if (is_array($geoData) && !empty($geoData['loc'])) {
+                $locParts = explode(',', $geoData['loc']);
+                if (count($locParts) === 2) {
+                    $lat = $locParts[0];
+                    $lon = $locParts[1];
+                }
+            }
+        } elseif (IP_SERVICE === 'ip-api.com') {
+            $geoJson = @file_get_contents('http://ip-api.com/json/' . $ip . '?fields=lat,lon');
+            $geoData = json_decode($geoJson, true);
+            if (is_array($geoData) && isset($geoData['lat'], $geoData['lon'])) {
+                $lat = $geoData['lat'];
+                $lon = $geoData['lon'];
+            }
         }
     }
 

@@ -53,6 +53,7 @@ ENV MAX_LOG_COUNT=100
 ENV IP_SERVICE="ip.sb"
 ENV SAME_IP_MULTI_LOGS="false"
 ENV TITLE="广东工业大学测速网站"
+ENV IPINFO_APIKEY=""
 
 VOLUME ["/speedlogs"]
 

@@ -68,6 +68,9 @@ function getLocalOrPrivateIpInfo($ip)
  */
 function getIpInfoTokenString()
 {
+    if (defined('IPINFO_APIKEY') && IPINFO_APIKEY) {
+        return '?token=' . IPINFO_APIKEY;
+    }
     if (!file_exists(API_KEY_FILE)) {
         return '';
     }
