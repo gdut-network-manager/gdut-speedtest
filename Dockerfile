@@ -33,9 +33,12 @@ RUN mkdir -p /speedtest/
 
 COPY backend/ /speedtest/backend
 COPY chartjs/ /speedtest/chartjs
+COPY echarts/ /speedtest/echarts
+COPY leaflet/ /speedtest/leaflet
 
 COPY *.js /speedtest/
 COPY *.html /speedtest/
+COPY .htaccess /speedtest/.htaccess
 
 COPY docker/entrypoint.sh /
 

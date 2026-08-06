@@ -34,6 +34,26 @@ if ($isCliRequest) {
     $isp = isset($parts[1]) ? trim($parts[1]) : 'Unknown';
     $addr = isset($parts[2]) ? trim($parts[2]) : '';
 
+    // Extract lat/lon from rawIspInfo inside ispinfo JSON
+    $rawIspInfo = is_array($ispInfo) && isset($ispInfo['rawIspInfo']) ? $ispInfo['rawIspInfo'] : null;
+    $lat = '';
+    $lon = '';
+    if (is_array($rawIspInfo)) {
+        if (isset($rawIspInfo['latitude'])) {           // ip.sb
+            $lat = $rawIspInfo['latitude'];
+            $lon = $rawIspInfo['longitude'];
+        } elseif (isset($rawIspInfo['lat'])) {           // ip-api.com
+            $lat = $rawIspInfo['lat'];
+            $lon = $rawIspInfo['lon'];
+        } elseif (!empty($rawIspInfo['loc'])) {          // ipinfo.io
+            $locParts = explode(',', $rawIspInfo['loc']);
+            if (count($locParts) === 2) {
+                $lat = $locParts[0];
+                $lon = $locParts[1];
+            }
+        }
+    }
+
     $reportData = [
         'key' => sha1($ip),
         'ip' => $ip,
@@ -43,6 +63,8 @@ if ($isCliRequest) {
         'uspeed' => (double) (isset($_POST['ul']) ? $_POST['ul'] : 0),
         'ping' => (double) (isset($_POST['ping']) ? $_POST['ping'] : 0),
         'jitter' => (double) (isset($_POST['jitter']) ? $_POST['jitter'] : 0),
+        'lat' => $lat,
+        'lon' => $lon,
         'created' => date('Y-m-d H:i:s', time()),
     ];
 } else {
@@ -55,6 +77,8 @@ if ($isCliRequest) {
         "uspeed" => (double) filter_var($_POST['uspeed'], FILTER_SANITIZE_STRING),
         "ping" => (double) filter_var($_POST['ping'], FILTER_SANITIZE_STRING),
         "jitter" => (double) filter_var($_POST['jitter'], FILTER_SANITIZE_STRING),
+        "lat" => isset($_POST['lat']) ? $_POST['lat'] : '',
+        "lon" => isset($_POST['lon']) ? $_POST['lon'] : '',
         "created" => date('Y-m-d H:i:s', time()),
     ];
 }

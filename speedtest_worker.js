@@ -12,6 +12,8 @@ var ulStatus = ""; // upload speed in megabit/s with 2 decimal digits
 var pingStatus = ""; // ping in milliseconds with 2 decimal digits
 var jitterStatus = ""; // jitter in milliseconds with 2 decimal digits
 var clientIp = ""; // client's IP address as reported by getIP.php
+var clientLat = ""; // client latitude from getIP.php
+var clientLon = ""; // client longitude from getIP.php
 var dlProgress = 0; //progress of download test 0-1
 var ulProgress = 0; //progress of upload test 0-1
 var pingProgress = 0; //progress of ping+jitter test 0-1
@@ -97,6 +99,8 @@ this.addEventListener("message", function(e) {
 				ulStatus: ulStatus,
 				pingStatus: pingStatus,
 				clientIp: clientIp,
+				clientLat: clientLat,
+				clientLon: clientLon,
 				jitterStatus: jitterStatus,
 				dlProgress: dlProgress,
 				ulProgress: ulProgress,
@@ -302,6 +306,8 @@ function getIp(done) {
 			var data = JSON.parse(xhr.responseText);
 			clientIp = data.processedString;
 			ispInfo = data.rawIspInfo;
+			clientLat = data.lat || "";
+			clientLon = data.lon || "";
 		} catch (e) {
 			clientIp = xhr.responseText;
 			ispInfo = "";

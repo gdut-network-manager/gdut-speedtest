@@ -261,10 +261,31 @@ function sendResponse($ip, $ipInfo = null, $rawIspInfo = null)
         $processedString .= ' - ' . $rawIspInfo['country'] . ',' . $region . ',' . $city;
     }
 
+    // Normalize lat/lon from different IP services
+    $lat = '';
+    $lon = '';
+    if (is_array($rawIspInfo)) {
+        if (isset($rawIspInfo['latitude'])) {           // ip.sb
+            $lat = $rawIspInfo['latitude'];
+            $lon = $rawIspInfo['longitude'];
+        } elseif (isset($rawIspInfo['lat'])) {           // ip-api.com
+            $lat = $rawIspInfo['lat'];
+            $lon = $rawIspInfo['lon'];
+        } elseif (!empty($rawIspInfo['loc'])) {          // ipinfo.io "lat,lon"
+            $parts = explode(',', $rawIspInfo['loc']);
+            if (count($parts) === 2) {
+                $lat = $parts[0];
+                $lon = $parts[1];
+            }
+        }
+    }
+
     sendHeaders();
     echo json_encode([
         'processedString' => $processedString,
         'rawIspInfo'      => $rawIspInfo ?: '',
+        'lat'             => $lat,
+        'lon'             => $lon,
     ]);
 }
 

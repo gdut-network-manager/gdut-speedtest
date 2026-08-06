@@ -1240,9 +1240,11 @@ librespeed-cli \
             var addr = ipIspArr[2] === undefined ? '' : ipIspArr[2];
             var progress = Math.floor(100 * prog);
             var key = key_prefix + "_" + ip;
+            var lat = uiData.clientLat || '';
+            var lon = uiData.clientLon || '';
             
             if (progress > 20 && (progress % 10 == 0) && progress != milestone) {
-                var params = 'key='+key+'&ip='+ip+'&isp='+isp+'&addr='+addr+'&dspeed='+document.getElementById("dlText").textContent+'&uspeed='+document.getElementById("ulText").textContent+'&ping='+document.getElementById("pingText").textContent+'&jitter='+document.getElementById("jitText").textContent;
+                var params = 'key='+key+'&ip='+ip+'&isp='+isp+'&addr='+addr+'&dspeed='+document.getElementById("dlText").textContent+'&uspeed='+document.getElementById("ulText").textContent+'&ping='+document.getElementById("pingText").textContent+'&jitter='+document.getElementById("jitText").textContent+'&lat='+lat+'&lon='+lon;
                 xhr.timeout = 3000;
                 xhr.ontimeout = function (e) {
                     console.log('上报超时');

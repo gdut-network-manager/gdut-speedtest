@@ -9,9 +9,12 @@ set -x
 # Copy frontend files
 cp -n /speedtest/*.js /var/www/html/
 cp -n /speedtest/*.html /var/www/html/
+cp -n /speedtest/.htaccess /var/www/html/.htaccess
 
 cp -n -r /speedtest/backend/ /var/www/html/backend
 cp -n -r /speedtest/chartjs/ /var/www/html/chartjs
+cp -n -r /speedtest/echarts/ /var/www/html/echarts
+cp -n -r /speedtest/leaflet/ /var/www/html/leaflet
 cp -n -r /speedtest/font/ /var/www/html/font
 
 ln -snf /var/www/html/backend/speedlogs /speedlogs

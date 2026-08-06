@@ -11,6 +11,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="leaflet/leaflet.css" />
+    <script src="leaflet/leaflet.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -279,6 +281,34 @@
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        /* Detail Modal */
+        .detail-modal {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .detail-modal.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .detail-modal-panel {
+            transform: scale(0.95) translateY(10px);
+            opacity: 0;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+        }
+        .detail-modal.open .detail-modal-panel {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+
+        /* Table row clickable */
+        .clickable-row {
+            cursor: pointer;
+        }
+        .clickable-row:hover {
+            background-color: var(--hover-bg);
+        }
+
     </style>
 
     <script>
@@ -403,19 +433,16 @@
                     <thead>
                         <tr class="glass-header text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
                             <th class="px-6 py-4 font-medium" data-sort="ip"><div class="flex items-center gap-2"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 9.75a3 3 0 015.5 2.25c0 1.5-1.5 2.25-3 2.25s-3 .75-3 2.25a3 3 0 005.5 2.25"></path></svg>IP地址<span class="sort-icon"></span></div></th>
-                            <th class="px-6 py-4 font-medium" data-sort="isp"><div class="flex items-center gap-2"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"></path></svg>运营商<span class="sort-icon"></span></div></th>
                             <th class="px-6 py-4 font-medium" data-sort="addr"><div class="flex items-center gap-2"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>城市<span class="sort-icon"></span></div></th>
                             <th class="px-6 py-4 font-medium text-right" data-sort="dspeed"><div class="flex items-center justify-end gap-2">下载 (Mbps)<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg><span class="sort-icon"></span></div></th>
                             <th class="px-6 py-4 font-medium text-right" data-sort="uspeed"><div class="flex items-center justify-end gap-2">上传 (Mbps)<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg><span class="sort-icon"></span></div></th>
-                            <th class="px-6 py-4 font-medium text-right" data-sort="ping"><div class="flex items-center justify-end gap-2">Ping (ms)<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="sort-icon"></span></div></th>
-                            <th class="px-6 py-4 font-medium text-right" data-sort="jitter"><div class="flex items-center justify-end gap-2">抖动 (ms)<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg><span class="sort-icon"></span></div></th>
                             <th class="px-6 py-4 font-medium" data-sort="created"><div class="flex items-center gap-2"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>测试时间<span class="sort-icon"></span></div></th>
                         </tr>
                     </thead>
                     <tbody id="table-body" class="divide-y divide-table text-sm">
                         <!-- Loading State -->
                         <tr>
-                            <td colspan="8" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
+                            <td colspan="5" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
                                 <div class="flex flex-col items-center justify-center gap-3">
                                     <svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -456,6 +483,19 @@
         </div>
     </div>
 
+    <!-- Detail Modal -->
+    <div id="detailModal" class="detail-modal fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div class="detail-modal-backdrop absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeDetail()"></div>
+        <div class="detail-modal-panel relative glass-panel rounded-3xl max-w-2xl w-full max-h-[85vh] overflow-y-auto p-6 sm:p-8">
+            <!-- Close button -->
+            <button onclick="closeDetail()" class="absolute top-4 right-4 w-9 h-9 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 flex items-center justify-center transition-colors z-10">
+                <svg class="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+
+            <div id="detail-content"></div>
+        </div>
+    </div>
+
     <script>
         let allData = [];
         let currentSort = { column: 'dspeed', direction: 'desc' };
@@ -470,6 +510,11 @@
                 if (result.code === 0 && result.data) {
                     allData = result.data;
                     renderTable();
+                    var urlParams = new URLSearchParams(window.location.search);
+                    var shareId = urlParams.get('id');
+                    if (shareId) {
+                        openDetail(shareId);
+                    }
                 } else {
                     showError('获取数据失败');
                 }
@@ -482,7 +527,7 @@
         function showError(msg) {
             document.getElementById('table-body').innerHTML = `
                 <tr>
-                    <td colspan="8" class="px-6 py-12 text-center text-red-500 dark:text-red-400">
+                    <td colspan="5" class="px-6 py-12 text-center text-red-500 dark:text-red-400">
                         ${msg}
                     </td>
                 </tr>
@@ -530,36 +575,32 @@
             const mobileCards = document.getElementById('mobile-cards');
             
             if (pageData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-8 text-center text-slate-500 dark:text-slate-400">暂无数据</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-slate-500 dark:text-slate-400">暂无数据</td></tr>`;
                 mobileCards.innerHTML = `<div class="py-8 text-center text-slate-500 dark:text-slate-400">暂无数据</div>`;
             } else {
                 tbody.innerHTML = pageData.map((row, index) => `
-                    <tr class="table-row-hover transition-colors row-enter" style="animation-delay: ${index * 0.03}s">
+                    <tr class="clickable-row transition-colors row-enter" style="animation-delay: ${index * 0.03}s" data-id="${row._id}" onclick="openDetail(${row._id})">
                         <td class="px-6 py-4 text-slate-700 dark:text-slate-300 font-mono text-xs">${row.ip || '-'}</td>
-                        <td class="px-6 py-4 text-slate-800 dark:text-slate-200">${row.isp || '-'}</td>
                         <td class="px-6 py-4 text-slate-500 dark:text-slate-400">${row.addr || '-'}</td>
                         <td class="px-6 py-4 text-right font-medium ${getSpeedClass(row.dspeed)}">${row.dspeed || '0.00'}</td>
                         <td class="px-6 py-4 text-right font-medium ${getSpeedClass(row.uspeed)}">${row.uspeed || '0.00'}</td>
-                        <td class="px-6 py-4 text-right text-slate-700 dark:text-slate-300">${row.ping || '0.00'}</td>
-                        <td class="px-6 py-4 text-right text-slate-500 dark:text-slate-400">${row.jitter || '0.00'}</td>
                         <td class="px-6 py-4 text-slate-500 dark:text-slate-400 text-xs">${row.created || '-'}</td>
                     </tr>
                 `).join('');
 
                 mobileCards.innerHTML = pageData.map((row, index) => `
-                    <div class="rounded-xl border border-table p-4 space-y-3 row-enter" style="animation-delay: ${index * 0.03}s">
+                    <div class="rounded-xl border border-table p-4 space-y-3 row-enter clickable-row" style="animation-delay: ${index * 0.03}s" data-id="${row._id}" onclick="openDetail(${row._id})">
                         <div class="flex items-center justify-between gap-2">
                             <span class="font-mono text-xs text-slate-700 dark:text-slate-300 truncate">${row.ip || '-'}</span>
-                            <span class="text-sm text-slate-800 dark:text-slate-200 shrink-0">${row.isp || '-'}</span>
+                            <span class="text-xs text-slate-500 dark:text-slate-400 shrink-0">${row.created || '-'}</span>
                         </div>
                         <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
                             <span class="flex items-center gap-1">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                                 ${row.addr || '-'}
                             </span>
-                            <span>${row.created || '-'}</span>
                         </div>
-                        <div class="grid grid-cols-4 gap-1 pt-2 border-t border-table">
+                        <div class="grid grid-cols-2 gap-1 pt-2 border-t border-table">
                             <div class="text-center">
                                 <div class="text-[10px] text-slate-400 dark:text-slate-500 mb-0.5">下载</div>
                                 <div class="text-sm font-medium ${getSpeedClass(row.dspeed)}">${row.dspeed || '0.00'}</div>
@@ -567,14 +608,6 @@
                             <div class="text-center">
                                 <div class="text-[10px] text-slate-400 dark:text-slate-500 mb-0.5">上传</div>
                                 <div class="text-sm font-medium ${getSpeedClass(row.uspeed)}">${row.uspeed || '0.00'}</div>
-                            </div>
-                            <div class="text-center">
-                                <div class="text-[10px] text-slate-400 dark:text-slate-500 mb-0.5">Ping</div>
-                                <div class="text-sm text-slate-700 dark:text-slate-300">${row.ping || '0.00'}</div>
-                            </div>
-                            <div class="text-center">
-                                <div class="text-[10px] text-slate-400 dark:text-slate-500 mb-0.5">抖动</div>
-                                <div class="text-sm text-slate-500 dark:text-slate-400">${row.jitter || '0.00'}</div>
                             </div>
                         </div>
                     </div>
@@ -627,6 +660,186 @@
                 currentPage++;
                 renderTable();
             }
+        });
+
+        // Detail Modal
+        var detailMap = null;
+        var currentDetailId = null;
+
+        function isPrivateIP(ip) {
+            if (!ip) return false;
+            if (ip === '::1' || ip.indexOf('127.') === 0 || ip.indexOf('localhost') !== -1) return true;
+            if (ip.indexOf('10.') === 0) return true;
+            if (ip.indexOf('192.168.') === 0) return true;
+            if (/^172\.(1[6-9]|2\d|3[01])\./.test(ip)) return true;
+            if (ip.indexOf('fe80:') === 0) return true;
+            return false;
+        }
+
+        function openDetail(id) {
+            var record = allData.find(function(r) { return r._id == id; });
+            if (!record) {
+                document.getElementById('detail-content').innerHTML = '<div class="py-12 text-center text-slate-500 dark:text-slate-400">该记录已过期或不存在</div>';
+            } else {
+                renderDetailContent(record);
+            }
+
+            var modal = document.getElementById('detailModal');
+            modal.classList.add('open');
+            document.body.style.overflow = 'hidden';
+            currentDetailId = id;
+
+            var url = new URL(window.location.href);
+            url.searchParams.set('id', id);
+            history.replaceState(null, '', url);
+        }
+
+        function closeDetail() {
+            var modal = document.getElementById('detailModal');
+            modal.classList.remove('open');
+            document.body.style.overflow = '';
+            currentDetailId = null;
+
+            if (detailMap) {
+                detailMap.remove();
+                detailMap = null;
+            }
+        }
+
+        function renderDetailContent(r) {
+            var addrParts = (r.addr || '').split(',');
+            var city = addrParts[addrParts.length - 1] || r.addr || '-';
+            var region = addrParts.length > 1 ? addrParts[addrParts.length - 2] : '';
+            var country = addrParts.length > 2 ? addrParts[0] : '';
+
+            var hasCoords = r.lat && r.lon && parseFloat(r.lat) !== 0 && parseFloat(r.lon) !== 0;
+            var showMap = hasCoords;
+            var mapPlaceholder = '';
+
+            if (!showMap) {
+                if (isPrivateIP(r.ip)) {
+                    mapPlaceholder = '<div class="flex items-center justify-center h-[280px] rounded-xl bg-black/5 dark:bg-white/5 text-sm text-slate-500 dark:text-slate-400">该测速记录的 IP 为内网 IP，无法展示地图数据</div>';
+                } else {
+                    mapPlaceholder = '<div class="flex items-center justify-center h-[280px] rounded-xl bg-black/5 dark:bg-white/5 text-sm text-slate-500 dark:text-slate-400">该记录无位置数据</div>';
+                }
+            }
+
+            var shareUrl = window.location.origin + window.location.pathname + '?id=' + r._id;
+
+            document.getElementById('detail-content').innerHTML = `
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold text-slate-800 dark:text-white mb-1">测速详情</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">记录 ID: ${r._id || '-'}</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="rounded-2xl bg-cyan-500/10 dark:bg-cyan-500/15 p-4 text-center">
+                        <div class="text-xs text-cyan-600 dark:text-cyan-400 mb-1">下载速度</div>
+                        <div class="text-3xl font-bold font-mono text-cyan-600 dark:text-cyan-400">${parseFloat(r.dspeed).toFixed(2)}</div>
+                        <div class="text-xs text-cyan-600/60 dark:text-cyan-400/60">Mbps</div>
+                    </div>
+                    <div class="rounded-2xl bg-purple-500/10 dark:bg-purple-500/15 p-4 text-center">
+                        <div class="text-xs text-purple-600 dark:text-purple-400 mb-1">上传速度</div>
+                        <div class="text-3xl font-bold font-mono text-purple-600 dark:text-purple-400">${parseFloat(r.uspeed).toFixed(2)}</div>
+                        <div class="text-xs text-purple-600/60 dark:text-purple-400/60">Mbps</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="rounded-xl bg-black/5 dark:bg-white/5 p-3 text-center">
+                        <div class="text-xs text-slate-500 dark:text-slate-400 mb-1">Ping</div>
+                        <div class="text-lg font-medium font-mono text-slate-700 dark:text-slate-300">${parseFloat(r.ping).toFixed(2)} ms</div>
+                    </div>
+                    <div class="rounded-xl bg-black/5 dark:bg-white/5 p-3 text-center">
+                        <div class="text-xs text-slate-500 dark:text-slate-400 mb-1">抖动</div>
+                        <div class="text-lg font-medium font-mono text-slate-700 dark:text-slate-300">${parseFloat(r.jitter).toFixed(2)} ms</div>
+                    </div>
+                </div>
+
+                <div class="rounded-xl bg-black/5 dark:bg-white/5 p-4 mb-6 space-y-2 text-sm">
+                    <div class="flex items-center justify-between gap-4">
+                        <span class="text-slate-500 dark:text-slate-400 shrink-0">IP 地址</span>
+                        <span class="font-mono text-slate-800 dark:text-slate-200">${r.ip || '-'}</span>
+                    </div>
+                    <div class="flex items-center justify-between gap-4">
+                        <span class="text-slate-500 dark:text-slate-400 shrink-0">运营商</span>
+                        <span class="text-slate-800 dark:text-slate-200 text-right">${r.isp || '-'}</span>
+                    </div>
+                    <div class="flex items-center justify-between gap-4">
+                        <span class="text-slate-500 dark:text-slate-400 shrink-0">国家/地区</span>
+                        <span class="text-slate-800 dark:text-slate-200 text-right">${country || '-'}</span>
+                    </div>
+                    <div class="flex items-center justify-between gap-4">
+                        <span class="text-slate-500 dark:text-slate-400 shrink-0">省份</span>
+                        <span class="text-slate-800 dark:text-slate-200 text-right">${region || '-'}</span>
+                    </div>
+                    <div class="flex items-center justify-between gap-4">
+                        <span class="text-slate-500 dark:text-slate-400 shrink-0">城市</span>
+                        <span class="text-slate-800 dark:text-slate-200 text-right">${city || '-'}</span>
+                    </div>
+                    <div class="flex items-center justify-between gap-4">
+                        <span class="text-slate-500 dark:text-slate-400 shrink-0">测速时间</span>
+                        <span class="text-slate-800 dark:text-slate-200 text-right">${r.created || '-'}</span>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <div class="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">位置地图</div>
+                    ${showMap ? '<div id="detail-map" class="h-[280px] rounded-xl overflow-hidden"></div>' : mapPlaceholder}
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button onclick="copyShareUrl()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 transition-colors text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                        复制分享链接
+                    </button>
+                    <span id="share-url-text" class="text-xs text-slate-400 dark:text-slate-500 truncate hidden sm:inline">${shareUrl}</span>
+                </div>
+            `;
+
+            if (showMap) {
+                setTimeout(function() { renderMap(parseFloat(r.lat), parseFloat(r.lon), city); }, 100);
+            }
+        }
+
+        function renderMap(lat, lon, label) {
+            if (detailMap) {
+                detailMap.remove();
+                detailMap = null;
+            }
+
+            var isDark = document.documentElement.classList.contains('dark');
+            var tileStyle = isDark ? 8 : 7;
+            var tileUrl = 'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=' + tileStyle + '&x={x}&y={y}&z={z}';
+            var subdomains = ['1', '2', '3', '4'];
+
+            detailMap = L.map('detail-map', {
+                center: [lat, lon],
+                zoom: 11,
+                zoomControl: true,
+                attributionControl: false
+            });
+
+            L.tileLayer(tileUrl, { subdomains: subdomains, maxZoom: 18 }).addTo(detailMap);
+
+            var marker = L.marker([lat, lon]).addTo(detailMap);
+            if (label) marker.bindPopup(label);
+
+            setTimeout(function() { detailMap.invalidateSize(); }, 200);
+        }
+
+        function copyShareUrl() {
+            var url = window.location.origin + window.location.pathname + '?id=' + currentDetailId;
+            navigator.clipboard.writeText(url).then(function() {
+                var btn = event.currentTarget;
+                var originalHTML = btn.innerHTML;
+                btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>已复制';
+                setTimeout(function() { btn.innerHTML = originalHTML; }, 2000);
+            });
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeDetail();
         });
 
         // Init
