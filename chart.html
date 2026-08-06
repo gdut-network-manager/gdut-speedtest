@@ -344,22 +344,15 @@
                     type: 'scatter',
                     data: data,
                     symbolSize: 8,
+                    progressive: 200,
+                    progressiveThreshold: 300,
                     itemStyle: {
-                        color: {
-                            type: 'radial',
-                            x: 0.5, y: 0.5, r: 0.5,
-                            colorStops: [
-                                { offset: 0, color: c.primary },
-                                { offset: 1, color: c.primary + '20' }
-                            ]
-                        },
-                        shadowBlur: 8,
-                        shadowColor: c.primary + '80'
+                        color: c.primary,
+                        opacity: 0.65
                     },
                     emphasis: {
                         itemStyle: {
-                            shadowBlur: 16,
-                            shadowColor: c.primary
+                            opacity: 1
                         },
                         scale: 1.4
                     }
@@ -490,7 +483,8 @@
                     }
                 ],
                 animation: true,
-                animationDuration: 800,
+                animationDuration: 300,
+                animationThreshold: 500,
                 animationEasing: 'cubicOut'
             };
         }
