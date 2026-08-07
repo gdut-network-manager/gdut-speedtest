@@ -10,6 +10,9 @@
  */
 
 require_once "./config.php";
+require_once "./rate_limit.php";
+
+checkRateLimit('speedtest', RATE_LIMIT_SPEEDTEST_PER_MINUTE);
 
 error_reporting(0);
 

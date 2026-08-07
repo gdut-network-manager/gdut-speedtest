@@ -1,5 +1,10 @@
 <?php
 
+require_once "./config.php";
+require_once "./rate_limit.php";
+
+checkRateLimit('speedtest', RATE_LIMIT_SPEEDTEST_PER_MINUTE);
+
 header('HTTP/1.1 200 OK');
 
 if (isset($_GET['cors'])) {

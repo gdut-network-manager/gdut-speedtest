@@ -64,6 +64,9 @@ speedtest-x 使用文件数据库来保存来自不同用户的测速结果，�
 > | `MAX_LOG_COUNT` | `1000` | 最大可保存多少条测速记录 |
 > | `IP_SERVICE` | `'ip.sb'` | 使用的 IP 运营商解析服务（`ip.sb` / `ipinfo.io` / `ip-api.com`） |
 > | `SAME_IP_MULTI_LOGS` | `true` | 是否允许同一 IP 记录多条测速结果 |
+> | `RATE_LIMIT_ENABLED` | `true` | 是否启用接口限流 |
+> | `RATE_LIMIT_REPORT_PER_MINUTE` | `5` | 报告接口每个 IP 每分钟最多提交次数 |
+> | `RATE_LIMIT_SPEEDTEST_PER_MINUTE` | `300` | 测速接口每个 IP 每分钟最多请求次数 |
 
 ### Docker 部署（支持平台：amd64 / arm64）
 
@@ -96,6 +99,9 @@ speedtest-x 使用文件数据库来保存来自不同用户的测速结果，�
 | `IP_SERVICE` | `ip.sb` | 使用的 IP 运营商解析服务 |
 | `SAME_IP_MULTI_LOGS` | `false` | 是否允许同一 IP 记录多条测速结果 |
 | `TITLE` | `广东工业大学测速网站` | 网站名称 |
+| `RATE_LIMIT_ENABLED` | `true` | 是否启用接口限流 |
+| `RATE_LIMIT_REPORT_PER_MINUTE` | `5` | 报告接口每个 IP 每分钟最多提交次数 |
+| `RATE_LIMIT_SPEEDTEST_PER_MINUTE` | `300` | 测速接口每个 IP 每分钟最多请求次数 |
 
 > 如果想让 Docker 容器支持 IPv6，可编辑 `/etc/docker/daemon.json`，加上以下内容（如果不存在这个文件则直接创建）：
 >

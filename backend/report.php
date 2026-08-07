@@ -2,6 +2,9 @@
 
 require_once "./SleekDB/SleekDB.php";
 require_once "./config.php";
+require_once "./rate_limit.php";
+
+checkRateLimit('report', RATE_LIMIT_REPORT_PER_MINUTE);
 
 function maskLastSegment($ip) {
     $ipaddr = inet_pton($ip);

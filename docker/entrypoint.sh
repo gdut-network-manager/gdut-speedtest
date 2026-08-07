@@ -29,6 +29,9 @@ fi
 sed -i "s/^const MAX_LOG_COUNT = [0-9]*/const MAX_LOG_COUNT = $MAX_LOG_COUNT/g" /var/www/html/backend/config.php
 sed -i "s/^const IP_SERVICE = '[^']*'/const IP_SERVICE = '$IP_SERVICE'/g" /var/www/html/backend/config.php
 sed -i "s/^const SAME_IP_MULTI_LOGS = [a-z]*/const SAME_IP_MULTI_LOGS = $SAME_IP_MULTI_LOGS/g" /var/www/html/backend/config.php
+sed -i "s/^const RATE_LIMIT_ENABLED = [a-z]*/const RATE_LIMIT_ENABLED = $RATE_LIMIT_ENABLED/g" /var/www/html/backend/config.php
+sed -i "s/^const RATE_LIMIT_REPORT_PER_MINUTE = [0-9]*/const RATE_LIMIT_REPORT_PER_MINUTE = $RATE_LIMIT_REPORT_PER_MINUTE/g" /var/www/html/backend/config.php
+sed -i "s/^const RATE_LIMIT_SPEEDTEST_PER_MINUTE = [0-9]*/const RATE_LIMIT_SPEEDTEST_PER_MINUTE = $RATE_LIMIT_SPEEDTEST_PER_MINUTE/g" /var/www/html/backend/config.php
 
 if [ -n "$IPINFO_APIKEY" ]; then
   sed -i "s/^const IPINFO_APIKEY = '[^']*'/const IPINFO_APIKEY = '$IPINFO_APIKEY'/g" /var/www/html/backend/config.php
