@@ -128,7 +128,8 @@ gdutnic-speedtest-x/
 │   ├── empty.php           # 下载测速空数据
 │   └── SleekDB/            # 文件数据库（JSON 存储）
 ├── chartjs/                # Chart.js 图表库
-├── font/                   # 自定义字体文件
+├── echarts/                # ECharts 图表库
+├── leaflet/                # Leaflet 地图库
 ├── docker/
 │   └── entrypoint.sh       # Docker 容器启动脚本
 ├── Dockerfile              # Docker 构建文件
