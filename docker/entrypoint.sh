@@ -26,20 +26,12 @@ if [ "$WEBPORT" != "80" ]; then
   sed -i "s/*:80>/*:$WEBPORT>/g" /etc/apache2/sites-available/000-default.conf
 fi
 
-if [ "$MAX_LOG_COUNT" != "1000" ]; then
-  sed -i "s/^const MAX_LOG_COUNT = 1000/const MAX_LOG_COUNT = $MAX_LOG_COUNT/g" /var/www/html/backend/config.php
-fi
-
-if [ "$IP_SERVICE" != "ip.sb" ]; then
-  sed -i "s/^const IP_SERVICE = 'ip.sb'/const IP_SERVICE = '$IP_SERVICE'/g" /var/www/html/backend/config.php
-fi
-
-if [ "$SAME_IP_MULTI_LOGS" != "false" ]; then
-  sed -i "s/^const SAME_IP_MULTI_LOGS = false/const SAME_IP_MULTI_LOGS = $SAME_IP_MULTI_LOGS/g" /var/www/html/backend/config.php
-fi
+sed -i "s/^const MAX_LOG_COUNT = [0-9]*/const MAX_LOG_COUNT = $MAX_LOG_COUNT/g" /var/www/html/backend/config.php
+sed -i "s/^const IP_SERVICE = '[^']*'/const IP_SERVICE = '$IP_SERVICE'/g" /var/www/html/backend/config.php
+sed -i "s/^const SAME_IP_MULTI_LOGS = [a-z]*/const SAME_IP_MULTI_LOGS = $SAME_IP_MULTI_LOGS/g" /var/www/html/backend/config.php
 
 if [ -n "$IPINFO_APIKEY" ]; then
-  sed -i "s/^const IPINFO_APIKEY = ''/const IPINFO_APIKEY = '$IPINFO_APIKEY'/g" /var/www/html/backend/config.php
+  sed -i "s/^const IPINFO_APIKEY = '[^']*'/const IPINFO_APIKEY = '$IPINFO_APIKEY'/g" /var/www/html/backend/config.php
 fi
 
 if [ "$TITLE" != "广东工业大学测速网站" ]; then
