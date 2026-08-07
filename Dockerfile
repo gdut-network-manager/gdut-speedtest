@@ -49,7 +49,7 @@ RUN printf '[PHP]\ndate.timezone = "Asia/Shanghai"\n' > /usr/local/etc/php/conf.
 # Prepare environment variabiles defaults
 
 ENV WEBPORT=80
-ENV MAX_LOG_COUNT=100
+ENV MAX_LOG_COUNT=1000
 ENV IP_SERVICE="ip.sb"
 ENV SAME_IP_MULTI_LOGS="false"
 ENV TITLE="广东工业大学测速网站"

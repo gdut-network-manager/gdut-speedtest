@@ -26,8 +26,8 @@ if [ "$WEBPORT" != "80" ]; then
   sed -i "s/*:80>/*:$WEBPORT>/g" /etc/apache2/sites-available/000-default.conf
 fi
 
-if [ "$MAX_LOG_COUNT" != "100" ]; then
-  sed -i "s/^const MAX_LOG_COUNT = 100/const MAX_LOG_COUNT = $MAX_LOG_COUNT/g" /var/www/html/backend/config.php
+if [ "$MAX_LOG_COUNT" != "1000" ]; then
+  sed -i "s/^const MAX_LOG_COUNT = 1000/const MAX_LOG_COUNT = $MAX_LOG_COUNT/g" /var/www/html/backend/config.php
 fi
 
 if [ "$IP_SERVICE" != "ip.sb" ]; then
