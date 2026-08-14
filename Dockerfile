@@ -12,8 +12,6 @@ RUN echo '# 默认注释了源码镜像以提高 apt update 速度，如有需�
     deb http://mirrors.gdut.edu.cn/debian/ bullseye-updates main contrib non-free \n\
     deb-src https://mirrors.gdut.edu.cn/debian/ bullseye-updates main contrib non-free \n\
     # 以下安全更新软件源包含了官方源与镜像站配置，如有需要可自行修改注释切换 \n\
-    deb http://mirrors.gdut.edu.cn/debian-security bullseye-security main contrib non-free \n\
-    deb-src http://mirrors.gdut.edu.cn/debian-security bullseye-security main contrib non-free \n\
     #deb http://security.debian.org/debian-security bullseye-security main contrib non-free \n\
     #deb-src http://security.debian.org/debian-security bullseye-security main contrib non-free \n\
     ' | tee /etc/apt/sources.list \
