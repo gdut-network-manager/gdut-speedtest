@@ -487,10 +487,11 @@
     <!-- Intro Modal -->
     <div id="introModal" class="intro-modal fixed inset-0 z-[100] flex items-center justify-center p-4">
         <div class="intro-modal-backdrop absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
-        <div class="intro-modal-panel relative glass-panel rounded-3xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-6 sm:p-8">
-            <button id="introClose" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 flex items-center justify-center transition-colors text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white">
+        <div class="intro-modal-panel relative glass-panel rounded-3xl max-w-2xl w-full max-h-[80vh] overflow-hidden p-6 sm:p-8">
+            <button id="introClose" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 flex items-center justify-center transition-colors text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white z-10">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
+            <div class="overflow-y-auto max-h-[calc(80vh-3rem)] sm:max-h-[calc(80vh-4rem)]">
             <h2 class="text-2xl font-bold title-gradient mb-6 pr-10">网站介绍</h2>
             <div class="space-y-6 text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
                 <section>
@@ -515,16 +516,18 @@
                     <p>测速数据保存在服务器端的文件数据库中，默认最多保留 <strong class="text-slate-700 dark:text-slate-200">1000</strong> 条记录，超出后最早记录将被自动覆盖。同一 IP 地址可多次提交测速结果。本站不保证数据存储的持久性，保留记录数量与策略可能根据服务器运营情况调整。测速结果与历史数据在「测速记录」页面公开可见，可按运营商、时间等维度排序浏览。</p>
                 </section>
             </div>
+            </div>
         </div>
     </div>
 
     <!-- CLI Tutorial Modal -->
     <div id="cliModal" class="intro-modal fixed inset-0 z-[100] flex items-center justify-center p-4">
         <div class="intro-modal-backdrop absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
-        <div class="intro-modal-panel relative glass-panel rounded-3xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-6 sm:p-8">
-            <button id="cliClose" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 flex items-center justify-center transition-colors text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white">
+        <div class="intro-modal-panel relative glass-panel rounded-3xl max-w-2xl w-full max-h-[80vh] overflow-hidden p-6 sm:p-8">
+            <button id="cliClose" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 flex items-center justify-center transition-colors text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white z-10">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
+            <div class="overflow-y-auto max-h-[calc(80vh-3rem)] sm:max-h-[calc(80vh-4rem)]">
             <h2 class="flex items-center gap-2 text-2xl font-bold title-gradient mb-6 pr-10">
                 <svg class="w-6 h-6 text-cyan-500 dark:text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                 命令行工具测速
@@ -685,6 +688,7 @@ librespeed-cli \
                     <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">测速完成后，结果会自动上传到本站，您可以在「测速记录」页面查看。CLI 还会输出一个分享链接，可直接在浏览器中打开查看结果。</p>
                 </section>
 
+            </div>
             </div>
         </div>
     </div>
