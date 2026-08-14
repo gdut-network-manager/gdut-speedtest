@@ -4,6 +4,7 @@ stages:
   - check-phase
   - build-phase-1
   - build-phase-2
+  - mirror
 
 variables:
   BIG_VERSION: v1.0
@@ -34,7 +35,8 @@ sonarqube-check:
     - develop
 
 github-mirror:
-  stage: check-phase
+  stage: mirror
+  needs: []
   image: alpine:latest
   tags:
     - dev
