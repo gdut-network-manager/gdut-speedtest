@@ -1,4 +1,4 @@
-FROM docker.registry.gdut.edu.cn/library/php:7.4-apache
+FROM registry.gdut.edu.cn/docker/library/php:7.4-apache
 
 # Argument
 ARG IMAGE_CREATED=1970-01-01T00:00:00Z
