@@ -1,0 +1,6 @@
+[registry."docker.io"]
+  mirrors = ["docker.registry.gdutnic.com"]
+
+[registry."docker.registry.gdutnic.com"]
+  http = false
+  insecure = false
