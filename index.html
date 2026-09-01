@@ -804,30 +804,39 @@ librespeed-cli \
         })();
 
         // IP Protocol Detection
-        var ipDetecting = true;
-        (function() {
-            var slider = document.getElementById('ip-slider');
-            var btn4 = document.getElementById('btn-ipv4');
-            var btn6 = document.getElementById('btn-ipv6');
-            var tip4 = document.getElementById('tip-ipv4');
-            var tip6 = document.getElementById('tip-ipv6');
+            var ipDetecting = true;
+            var activeVersion = 4;
+            (function() {
+                var slider = document.getElementById('ip-slider');
+                var btn4 = document.getElementById('btn-ipv4');
+                var btn6 = document.getElementById('btn-ipv6');
+                var tip4 = document.getElementById('tip-ipv4');
+                var tip6 = document.getElementById('tip-ipv6');
 
-            [btn4, btn6, slider].forEach(function(el) {
-                el.style.opacity = '0.35';
-                el.style.pointerEvents = 'none';
-                el.style.cursor = 'not-allowed';
-            });
-
-            function setActive(version) {
-                [btn4, btn6].forEach(function(btn) {
-                    btn.classList.remove('text-cyan-600', 'dark:text-cyan-400');
-                    btn.classList.add('text-slate-600', 'dark:text-gray-400');
+                [btn4, btn6, slider].forEach(function(el) {
+                    el.style.opacity = '0.35';
+                    el.style.pointerEvents = 'none';
+                    el.style.cursor = 'not-allowed';
                 });
-                var active = version === 6 ? btn6 : btn4;
-                active.classList.remove('text-slate-600', 'dark:text-gray-400');
-                active.classList.add('text-cyan-600', 'dark:text-cyan-400');
-                slider.style.transform = version === 6 ? 'translateX(3.5rem)' : 'translateX(0)';
-            }
+
+                function setActive(version) {
+                    activeVersion = version;
+                    [btn4, btn6].forEach(function(btn) {
+                        btn.classList.remove('text-cyan-600', 'dark:text-cyan-400');
+                        btn.classList.add('text-slate-600', 'dark:text-gray-400');
+                    });
+                    var active = version === 6 ? btn6 : btn4;
+                    active.classList.remove('text-slate-600', 'dark:text-gray-400');
+                    active.classList.add('text-cyan-600', 'dark:text-cyan-400');
+                    slider.style.transform = version === 6 ? 'translateX(3.5rem)' : 'translateX(0)';
+                }
+
+                btn4.addEventListener('click', function(e) {
+                    if (activeVersion === 4) e.preventDefault();
+                });
+                btn6.addEventListener('click', function(e) {
+                    if (activeVersion === 6) e.preventDefault();
+                });
 
             function disableBtn(btn, tip) {
                 btn.style.opacity = '0.35';
