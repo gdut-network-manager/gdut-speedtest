@@ -4,3 +4,4 @@ speedlogs
 .playwright-mcp/
 backend/cernet_ranges.php
 backend/cernet_whois_cache.php
+backend/rate_limit/
