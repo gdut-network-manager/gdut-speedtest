@@ -68,6 +68,22 @@ speedtest-x 使用文件数据库来保存来自不同用户的测速结果，�
 > | `RATE_LIMIT_REPORT_PER_MINUTE` | `5` | 报告接口每个 IP 每分钟最多提交次数 |
 > | `RATE_LIMIT_SPEEDTEST_PER_MINUTE` | `300` | 测速接口每个 IP 每分钟最多请求次数 |
 
+#### 教育网 IP 识别（可选）
+
+`backend/cernet_ranges.php`（已被 `.gitignore` 排除，仓库内附 `cernet_ranges.sample.php` 模板）可配置教育网 IP 识别规则：
+
+- **`ranges`**：学校明细列表。IP 命中后直接返回学校名、城市与经纬度，不再查询外部 IP 服务
+- **`prefixes`**：教育网网段列表（AS4538 播报前缀）。IP 命中但未命中 `ranges` 时，自动请求 CERNIC whois（`web.nic.edu.cn`）查询学校名称，结果缓存到 `backend/cernet_whois_cache.php`
+- 文件不存在时功能自动关闭，回退到 `IP_SERVICE` 配置的解析服务
+
+Docker 部署时通过 volume 挂载：
+
+```bash
+docker run -d \
+  -v /home/speedtest-x/backend/cernet_ranges.php:/var/www/html/backend/cernet_ranges.php:ro \
+  ... 
+```
+
 ### Docker 部署（支持平台：amd64 / arm64）
 
 1. 拉取 Docker 镜像：

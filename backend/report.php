@@ -3,6 +3,7 @@
 require_once "./SleekDB/SleekDB.php";
 require_once "./config.php";
 require_once "./rate_limit.php";
+require_once "./cernet.php";
 
 checkRateLimit('report', RATE_LIMIT_REPORT_PER_MINUTE);
 
@@ -42,8 +43,15 @@ if ($isCliRequest) {
     $lat = '';
     $lon = '';
     if (!empty($ip) && filter_var($ip, FILTER_VALIDATE_IP)) {
-        $geoJson = '';
-        if (IP_SERVICE === 'ipinfo.io') {
+        $cernet = cernetLookup($ip);
+        if ($cernet !== null) {
+            $isp = $cernet['isp'] !== '' ? $cernet['isp'] : $isp;
+            if ($cernet['city'] !== '') {
+                $addr = $cernet['city'];
+            }
+            $lat = $cernet['lat'];
+            $lon = $cernet['lon'];
+        } elseif (IP_SERVICE === 'ipinfo.io') {
             $token = defined('IPINFO_APIKEY') && IPINFO_APIKEY ? '?token=' . IPINFO_APIKEY : '';
             $geoJson = @file_get_contents('https://ipinfo.io/' . $ip . '/json' . $token);
             $geoData = json_decode($geoJson, true);

@@ -11,6 +11,7 @@
 
 require_once "./config.php";
 require_once "./rate_limit.php";
+require_once "./cernet.php";
 
 checkRateLimit('speedtest', RATE_LIMIT_SPEEDTEST_PER_MINUTE);
 
@@ -254,23 +255,26 @@ function sendHeaders()
  * @param array|null  $rawIspInfo
  * @return void
  */
-function sendResponse($ip, $ipInfo = null, $rawIspInfo = null)
+function sendResponse($ip, $ipInfo = null, $rawIspInfo = null, $lat = null, $lon = null, $addr = null)
 {
     $processedString = $ip;
     if (is_string($ipInfo)) {
         $processedString .= ' - ' . $ipInfo;
     }
 
-    if (is_array($rawIspInfo) && !empty($rawIspInfo['country'])) {
+    if ($addr !== null) {
+        $processedString .= ' - 中国,' . $addr;
+    } elseif (is_array($rawIspInfo) && !empty($rawIspInfo['country'])) {
         $region = $rawIspInfo['region'] ?? ($rawIspInfo['regionName'] ?? '');
         $city   = $rawIspInfo['city'] ?? '';
         $processedString .= ' - ' . $rawIspInfo['country'] . ',' . $region . ',' . $city;
     }
 
-    // Normalize lat/lon from different IP services
-    $lat = '';
-    $lon = '';
-    if (is_array($rawIspInfo)) {
+    if ($lat === null) {
+        $lat = '';
+        $lon = '';
+    }
+    if ($lat === '' && is_array($rawIspInfo)) {
         if (isset($rawIspInfo['latitude'])) {           // ip.sb
             $lat = $rawIspInfo['latitude'];
             $lon = $rawIspInfo['longitude'];
@@ -306,6 +310,13 @@ if (is_string($localIpInfo)) {
 
 if (!isset($_GET['isp'])) {
     sendResponse($ip);
+    exit;
+}
+
+$cernet = cernetLookup($ip);
+if ($cernet !== null) {
+    $addr = $cernet['city'] !== '' ? $cernet['city'] : '中国教育网';
+    sendResponse($ip, $cernet['isp'], null, $cernet['lat'], $cernet['lon'], $addr);
     exit;
 }
 
