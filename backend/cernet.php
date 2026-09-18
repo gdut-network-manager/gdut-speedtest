@@ -137,9 +137,11 @@ function queryCernicWhois($ip)
         $result['isp'] = trim($m[1][0]);
         $last = trim(end($m[1]));
         if (preg_match('/^(.+?),(.+?)(?:\s+Province)?$/u', $last, $cm)) {
-            $result['city'] = preg_replace('/\s+\d{6}$/', '', trim($cm[1]));
-            $region = trim(str_replace(' Province', '', $cm[2]));
-            $result['region'] = preg_replace('/\s+Prov\.?$/', '', $region);
+            $cityRaw = trim($cm[1]);
+            $regionRaw = trim(str_replace(' Province', '', $cm[2]));
+            $result['city'] = preg_replace('/\s+\d{5,6}.*$/', '', $cityRaw);
+            $regionClean = preg_replace('/\s+\d{5,6}.*$/', '', $regionRaw);
+            $result['region'] = preg_replace('/\s+Prov\.?$/', '', $regionClean);
         }
     }
     if (!isset($result['isp']) && isset($result['netname'])) {
