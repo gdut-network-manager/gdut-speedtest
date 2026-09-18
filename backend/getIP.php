@@ -263,7 +263,7 @@ function sendResponse($ip, $ipInfo = null, $rawIspInfo = null, $lat = null, $lon
     }
 
     if ($addr !== null) {
-        $processedString .= ' - 中国,' . $addr;
+        $processedString .= ' - ' . $addr;
     } elseif (is_array($rawIspInfo) && !empty($rawIspInfo['country'])) {
         $region = $rawIspInfo['region'] ?? ($rawIspInfo['regionName'] ?? '');
         $city   = $rawIspInfo['city'] ?? '';
@@ -315,7 +315,11 @@ if (!isset($_GET['isp'])) {
 
 $cernet = cernetLookup($ip);
 if ($cernet !== null) {
-    $addr = $cernet['city'] !== '' ? $cernet['city'] : '中国教育网';
+    $addrParts = array_filter([$cernet['country'], $cernet['region'], $cernet['city']], fn($p) => $p !== '');
+    $addr = implode(',', $addrParts);
+    if ($addr === '') {
+        $addr = 'China';
+    }
     sendResponse($ip, $cernet['isp'], null, $cernet['lat'], $cernet['lon'], $addr);
     exit;
 }

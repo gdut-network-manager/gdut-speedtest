@@ -4,6 +4,20 @@ define('CERNET_RANGES_FILE', __DIR__ . '/cernet_ranges.php');
 define('CERNET_WHOIS_CACHE_FILE', __DIR__ . '/cernet_whois_cache.php');
 define('CERNIC_WHOIS_URL', 'https://web.nic.edu.cn/member-cgi/otherobj?query=');
 
+function cernetCityEn($city)
+{
+    static $map = [
+        '广州' => 'Guangzhou', '佛山' => 'Foshan', '深圳' => 'Shenzhen',
+        '珠海' => 'Zhuhai', '汕头' => 'Shantou', '湛江' => 'Zhanjiang',
+        '茂名' => 'Maoming', '肇庆' => 'Zhaoqing', '惠州' => 'Huizhou',
+        '梅州' => 'Meizhou', '汕尾' => 'Shanwei', '河源' => 'Heyuan',
+        '阳江' => 'Yangjiang', '清远' => 'Qingyuan', '韶关' => 'Shaoguan',
+        '东莞' => 'Dongguan', '中山' => 'Zhongshan', '潮州' => 'Chaozhou',
+        '揭阳' => 'Jieyang', '江门' => 'Jiangmen',
+    ];
+    return isset($map[$city]) ? $map[$city] : $city;
+}
+
 function ipInRange($ip, $range)
 {
     if (strpos($range, '/') === false) {
@@ -63,7 +77,9 @@ function findLocalRange($ip)
         if (isset($entry['range']) && ipInRange($ip, $entry['range'])) {
             return [
                 'isp' => isset($entry['name']) ? $entry['name'] : '中国教育网',
-                'city' => isset($entry['city']) ? $entry['city'] : '',
+                'country' => 'China',
+                'region' => 'Guangdong',
+                'city' => isset($entry['city']) ? cernetCityEn($entry['city']) : '',
                 'lat' => isset($entry['lat']) ? (string) $entry['lat'] : '',
                 'lon' => isset($entry['lon']) ? (string) $entry['lon'] : '',
             ];
@@ -120,9 +136,10 @@ function queryCernicWhois($ip)
     if (preg_match_all('/descr:\s*(.+)/i', $html, $m)) {
         $result['isp'] = trim($m[1][0]);
         $last = trim(end($m[1]));
-        if (preg_match('/^([^,]+),(.+?)(?:\s+Province)?$/u', $last, $cm)) {
-            $result['city'] = trim($cm[1]);
-            $result['region'] = trim(str_replace(' Province', '', $cm[2]));
+        if (preg_match('/^(.+?),(.+?)(?:\s+Province)?$/u', $last, $cm)) {
+            $result['city'] = preg_replace('/\s+\d{6}$/', '', trim($cm[1]));
+            $region = trim(str_replace(' Province', '', $cm[2]));
+            $result['region'] = preg_replace('/\s+Prov\.?$/', '', $region);
         }
     }
     if (!isset($result['isp']) && isset($result['netname'])) {
@@ -131,6 +148,7 @@ function queryCernicWhois($ip)
     if (!isset($result['isp'])) {
         return null;
     }
+    $result['country'] = 'China';
 
     $cache[$ip] = $result;
     $export = "<?php\n\nreturn " . var_export($cache, true) . ";\n";
@@ -160,6 +178,8 @@ function cernetLookup($ip)
 
     return [
         'isp' => $whois['isp'],
+        'country' => 'China',
+        'region' => isset($whois['region']) && $whois['region'] !== '' && strcasecmp($whois['region'], 'China') !== 0 ? $whois['region'] : '',
         'city' => isset($whois['city']) ? $whois['city'] : '',
         'lat' => '',
         'lon' => '',

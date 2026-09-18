@@ -46,8 +46,9 @@ if ($isCliRequest) {
         $cernet = cernetLookup($ip);
         if ($cernet !== null) {
             $isp = $cernet['isp'] !== '' ? $cernet['isp'] : $isp;
-            if ($cernet['city'] !== '') {
-                $addr = $cernet['city'];
+            $addrParts = array_filter([$cernet['country'], $cernet['region'], $cernet['city']], fn($p) => $p !== '');
+            if ($addrParts) {
+                $addr = implode(',', $addrParts);
             }
             $lat = $cernet['lat'];
             $lon = $cernet['lon'];
