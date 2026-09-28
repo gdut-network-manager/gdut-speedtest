@@ -243,6 +243,29 @@
             background-color: rgba(34, 211, 238, 0.15);
         }
 
+        /* Speed columns */
+        .speed-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-left: auto;
+        }
+        .speed-col {
+            width: 7.5rem;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .speed-col .speed-value {
+            margin-left: auto;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+        @media (min-width: 640px) {
+            .speed-col { width: 8.5rem; gap: 0.25rem; }
+        }
+
         /* Speed Glows */
         .speed-fast {
             color: var(--speed-fast);
@@ -610,16 +633,16 @@
                                 <div class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 sm:hidden">${row.created || '-'}</div>
                             </div>
                         </div>
-                        <div class="flex items-center gap-4 sm:gap-6 sm:justify-end">
-                            <div class="flex items-baseline gap-1">
-                                <svg class="w-3.5 h-3.5 text-slate-400 shrink-0 self-center" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                                <span class="text-base sm:text-lg font-semibold tabular-nums ${getSpeedClass(row.dspeed)}">${row.dspeed || '0.00'}</span>
-                                <span class="text-[10px] text-slate-400 dark:text-slate-500">Mbps</span>
+                        <div class="speed-row">
+                            <div class="speed-col">
+                                <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                <span class="speed-value text-base sm:text-lg ${getSpeedClass(row.dspeed)}">${row.dspeed || '0.00'}</span>
+                                <span class="text-[10px] text-slate-400 dark:text-slate-500 shrink-0">Mbps</span>
                             </div>
-                            <div class="flex items-baseline gap-1">
-                                <svg class="w-3.5 h-3.5 text-slate-400 shrink-0 self-center" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4-4m0 0l-4 4m4-4v12"></path></svg>
-                                <span class="text-base sm:text-lg font-semibold tabular-nums ${getSpeedClass(row.uspeed)}">${row.uspeed || '0.00'}</span>
-                                <span class="text-[10px] text-slate-400 dark:text-slate-500">Mbps</span>
+                            <div class="speed-col">
+                                <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4-4m0 0l-4 4m4-4v12"></path></svg>
+                                <span class="speed-value text-base sm:text-lg ${getSpeedClass(row.uspeed)}">${row.uspeed || '0.00'}</span>
+                                <span class="text-[10px] text-slate-400 dark:text-slate-500 shrink-0">Mbps</span>
                             </div>
                             <div class="text-xs text-slate-500 dark:text-slate-400 sm:text-right shrink-0 hidden sm:block whitespace-nowrap">${row.created || '-'}</div>
                         </div>
