@@ -527,14 +527,28 @@
             </div>
             
             <!-- Pagination -->
-            <div class="glass-header px-6 py-4 flex items-center justify-between border-t border-table">
-                <div class="text-sm text-slate-500 dark:text-slate-400">
-                    共 <span id="total-count" class="text-slate-900 dark:text-white font-medium">0</span> 条记录
+            <div class="glass-header px-6 py-4 flex flex-wrap items-center justify-between gap-3 border-t border-table">
+                <div class="flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
+                    <span>共 <span id="total-count" class="text-slate-900 dark:text-white font-medium">0</span> 条记录</span>
+                    <span class="opacity-20 hidden sm:inline">|</span>
+                    <label class="flex items-center gap-1.5 cursor-pointer">
+                        每页
+                        <select id="page-size" class="rounded-lg bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/10 px-1.5 py-1 text-xs text-slate-700 dark:text-slate-200 cursor-pointer focus:outline-none focus:ring-1 focus:ring-cyan-400/50">
+                            <option value="10">10</option>
+                            <option value="15" selected>15</option>
+                            <option value="30">30</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                        条
+                    </label>
                 </div>
-                <div class="flex gap-2">
+                <div class="flex items-center gap-2">
                     <button id="prev-page" class="px-3 py-1.5 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm">上一页</button>
-                    <div class="flex items-center px-2 text-sm">
-                        <span id="current-page">1</span> / <span id="total-pages">1</span>
+                    <div class="flex items-center gap-1 text-sm px-1">
+                        <input id="page-jump" type="number" min="1" value="1" class="w-14 rounded-lg bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/10 px-2 py-1 text-center text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-cyan-400/50 tabular-nums" />
+                        <span class="text-slate-400">/</span>
+                        <span id="total-pages">1</span>
                     </div>
                     <button id="next-page" class="px-3 py-1.5 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm">下一页</button>
                 </div>
@@ -559,7 +573,7 @@
         let allData = [];
         let currentSort = { column: 'dspeed', direction: 'desc' };
         let currentPage = 1;
-        const itemsPerPage = 15;
+        let itemsPerPage = 15;
 
         // Fetch data
         async function fetchData() {
@@ -659,7 +673,8 @@
             
             // Update pagination UI
             document.getElementById('total-count').textContent = allData.length;
-            document.getElementById('current-page').textContent = currentPage;
+            document.getElementById('page-jump').value = currentPage;
+            document.getElementById('page-jump').max = totalPages;
             document.getElementById('total-pages').textContent = totalPages;
             
             document.getElementById('prev-page').disabled = currentPage === 1;
@@ -703,6 +718,21 @@
                 currentPage++;
                 renderTable();
             }
+        });
+
+        document.getElementById('page-size').addEventListener('change', (e) => {
+            itemsPerPage = parseInt(e.target.value, 10) || 15;
+            currentPage = 1;
+            renderTable();
+        });
+
+        document.getElementById('page-jump').addEventListener('change', (e) => {
+            const totalPages = Math.ceil(allData.length / itemsPerPage) || 1;
+            let target = parseInt(e.target.value, 10);
+            if (isNaN(target) || target < 1) target = 1;
+            if (target > totalPages) target = totalPages;
+            currentPage = target;
+            renderTable();
         });
 
         // Detail Modal
