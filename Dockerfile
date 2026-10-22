@@ -1,27 +1,32 @@
-FROM php:7.4-apache
+FROM php:8.5-apache
 
 # Argument
 ARG IMAGE_CREATED=1970-01-01T00:00:00Z
 ARG IMAGE_VERSION=0.0.0
 ARG IMAGE_REVISION=1
 
-# Install extensions
-RUN echo '# 默认注释了源码镜像以提高 apt update 速度，如有需要可自行取消注释 \n\
-    deb http://mirrors.gdut.edu.cn/debian/ bullseye main contrib non-free \n\
-    deb-src https://mirrors.gdut.edu.cn/debian/ bullseye main contrib non-free \n\
-    deb http://mirrors.gdut.edu.cn/debian/ bullseye-updates main contrib non-free \n\
-    deb-src https://mirrors.gdut.edu.cn/debian/ bullseye-updates main contrib non-free \n\
-    # 以下安全更新软件源包含了官方源与镜像站配置，如有需要可自行修改注释切换 \n\
-    #deb http://security.debian.org/debian-security bullseye-security main contrib non-free \n\
-    #deb-src http://security.debian.org/debian-security bullseye-security main contrib non-free \n\
-    ' | tee /etc/apt/sources.list \
-    && apt-get update && apt-get install -y \
+# Configure apt to use GDUT mirror (Debian trixie, deb822 format)
+RUN printf 'Types: deb\n\
+URIs: http://mirrors.gdut.edu.cn/debian\n\
+Suites: trixie trixie-updates\n\
+Components: main contrib non-free non-free-firmware\n\
+Signed-By: /usr/share/keyrings/debian-archive-keyring.pgp\n\
+\n\
+Types: deb\n\
+URIs: http://mirrors.gdut.edu.cn/debian-security\n\
+Suites: trixie-security\n\
+Components: main contrib non-free non-free-firmware\n\
+Signed-By: /usr/share/keyrings/debian-archive-keyring.pgp\n\
+' > /etc/apt/sources.list.d/debian.sources
+
+# iconv is built-in since PHP 8, so only gd needs installing here
+RUN apt-get update && apt-get install -y --no-install-recommends \
         libfreetype6-dev \
         libjpeg62-turbo-dev \
         libpng-dev \
-    && docker-php-ext-install -j$(nproc) iconv \
-    && docker-php-ext-configure gd --with-freetype=/usr/include/ --with-jpeg=/usr/include/ \
-    && docker-php-ext-install -j$(nproc) gd
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) gd \
+    && rm -rf /var/lib/apt/lists/*
 
 # Prepare files and folders
 

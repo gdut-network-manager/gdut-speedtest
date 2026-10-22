@@ -49,7 +49,7 @@ speedtest-x 使用文件数据库来保存来自不同用户的测速结果，�
 
 ## 部署与使用
 
-### 常规部署（环境要求：PHP 5.6+）
+### 常规部署（环境要求：PHP 8.0+）
 
 1. 下载本仓库并解压到网站目录，访问 `{域名}/index.html` 进行测速
 
@@ -164,8 +164,8 @@ gdutnic-speedtest-x/
 ## 技术栈
 
 - **前端**：HTML + Tailwind CSS（CDN）+ Canvas 2D + Chart.js
-- **后端**：PHP 7.4 + SleekDB（基于 JSON 文件的轻量 NoSQL 数据库）
-- **部署**：Docker（php:7.4-apache 基镜像）
+- **后端**：PHP 8.5 + SleekDB（基于 JSON 文件的轻量 NoSQL 数据库）
+- **部署**：Docker（php:8.5-apache 基镜像）
 - **CI/CD**：GitLab CI + SonarQube
 
 ---

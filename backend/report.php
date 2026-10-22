@@ -7,6 +7,10 @@ require_once "./cernet.php";
 
 checkRateLimit('report', RATE_LIMIT_REPORT_PER_MINUTE);
 
+function sanitizeText($value) {
+    return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+}
+
 function maskLastSegment($ip) {
     $ipaddr = inet_pton($ip);
     if (strlen($ipaddr) == 4) {
@@ -78,10 +82,10 @@ if ($isCliRequest) {
         'ip' => $ip,
         'isp' => $isp,
         'addr' => $addr,
-        'dspeed' => (double) (isset($_POST['dl']) ? $_POST['dl'] : 0),
-        'uspeed' => (double) (isset($_POST['ul']) ? $_POST['ul'] : 0),
-        'ping' => (double) (isset($_POST['ping']) ? $_POST['ping'] : 0),
-        'jitter' => (double) (isset($_POST['jitter']) ? $_POST['jitter'] : 0),
+        'dspeed' => (float) (isset($_POST['dl']) ? $_POST['dl'] : 0),
+        'uspeed' => (float) (isset($_POST['ul']) ? $_POST['ul'] : 0),
+        'ping' => (float) (isset($_POST['ping']) ? $_POST['ping'] : 0),
+        'jitter' => (float) (isset($_POST['jitter']) ? $_POST['jitter'] : 0),
         'lat' => $lat,
         'lon' => $lon,
         'client_type' => 'cli',
@@ -89,14 +93,14 @@ if ($isCliRequest) {
     ];
 } else {
     $reportData = [
-        "key" => sha1(filter_var($_POST['key'], FILTER_SANITIZE_STRING)),
-        "ip" => filter_var($_POST['ip'], FILTER_SANITIZE_STRING),
-        "isp" => filter_var($_POST['isp'], FILTER_SANITIZE_STRING),
-        "addr" => filter_var($_POST['addr'], FILTER_SANITIZE_STRING),
-        "dspeed" => (double) filter_var($_POST['dspeed'], FILTER_SANITIZE_STRING),
-        "uspeed" => (double) filter_var($_POST['uspeed'], FILTER_SANITIZE_STRING),
-        "ping" => (double) filter_var($_POST['ping'], FILTER_SANITIZE_STRING),
-        "jitter" => (double) filter_var($_POST['jitter'], FILTER_SANITIZE_STRING),
+        "key" => sha1($_POST['key'] ?? ''),
+        "ip" => sanitizeText($_POST['ip'] ?? ''),
+        "isp" => sanitizeText($_POST['isp'] ?? ''),
+        "addr" => sanitizeText($_POST['addr'] ?? ''),
+        "dspeed" => (float) ($_POST['dspeed'] ?? 0),
+        "uspeed" => (float) ($_POST['uspeed'] ?? 0),
+        "ping" => (float) ($_POST['ping'] ?? 0),
+        "jitter" => (float) ($_POST['jitter'] ?? 0),
         "lat" => isset($_POST['lat']) ? $_POST['lat'] : '',
         "lon" => isset($_POST['lon']) ? $_POST['lon'] : '',
         "client_type" => 'web',
